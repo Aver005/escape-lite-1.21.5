@@ -1,0 +1,10 @@
+name: Escape-Lite-1.21.5
+version: '1.0-SNAPSHOT'
+main: com.example.escapeplugin.EscapePlugin
+api-version: '1.21'
+prefix: Escape
+authors: [ Kiviuly ]
+commands:
+  es:
+    description: Основная команда для управления игрой Escape.
+    usage: /es
