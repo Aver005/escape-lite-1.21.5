@@ -8,20 +8,24 @@ import org.bukkit.inventory.ItemStack;
 
 public class KillQuest extends Quest
 {
-    public KillQuest() {
-        super("Охотник", "Убейте 3 игроков", 3);
+    private final int count = 10;
+
+    public KillQuest(int count)
+    {
+        super("Охотник", "Убейте " + count + " игроков", count);
     }
 
     @EventHandler
-    public void onKill(PlayerDeathEvent event) {
-        if (event.getEntity().getKiller() != null) {
-            Player killer = event.getEntity().getKiller();
-            updateProgress(killer, 1);
-        }
+    public void onKill(PlayerDeathEvent event)
+    {
+        Player killer = event.getEntity().getKiller();
+        if (killer == null) return;
+        updateProgress(killer, 1);
     }
 
     @Override
-    public void onComplete(Player player) {
+    public void onComplete(Player player)
+    {
         player.sendMessage("§6§lКвест завершен! Вы получили §a5 алмазов§6!");
         player.getInventory().addItem(new ItemStack(Material.DIAMOND, 5));
     }

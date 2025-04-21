@@ -10,7 +10,8 @@ public abstract class Quest implements Listener
     protected int targetCount;
     protected int progress;
 
-    public Quest(String name, String description, int targetCount) {
+    public Quest(String name, String description, int targetCount)
+    {
         this.name = name;
         this.description = description;
         this.targetCount = targetCount;
@@ -19,45 +20,21 @@ public abstract class Quest implements Listener
 
     public abstract void onComplete(Player player);
 
-    public void updateProgress(Player player, int amount) {
+    public void updateProgress(Player player, int amount)
+    {
         progress += amount;
         player.sendMessage("§aПрогресс квеста '" + name + "': §e" + progress + "§6/§e" + targetCount);
-        if (progress >= targetCount) {
-            onComplete(player);
-        }
+        if (progress < targetCount) return;
+        onComplete(player);
     }
 
-    // Геттеры
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public int getTargetCount() { return targetCount; }
+    public int getProgress() { return progress; }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public int getTargetCount() {
-        return targetCount;
-    }
-
-    public int getProgress() {
-        return progress;
-    }
-
-    // Сеттеры
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setTargetCount(int targetCount) {
-        this.targetCount = targetCount;
-    }
-
-    public void setProgress(int progress) {
-        this.progress = progress;
-    }
+    public void setName(String name) { this.name = name; }
+    public void setDescription(String description) { this.description = description; }
+    public void setTargetCount(int targetCount) { this.targetCount = targetCount; }
+    public void setProgress(int progress) { this.progress = progress; }
 }

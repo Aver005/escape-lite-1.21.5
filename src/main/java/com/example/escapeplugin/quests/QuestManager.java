@@ -7,7 +7,8 @@ public class QuestManager
 {
     private final Map<Player, List<Quest>> activeQuests = new HashMap<>();
 
-    public void assignQuest(Player player, Quest quest) {
+    public void assignQuest(Player player, Quest quest)
+    {
         if (!activeQuests.containsKey(player)) {
             activeQuests.put(player, new ArrayList<>());
         }
@@ -15,12 +16,13 @@ public class QuestManager
         player.sendMessage("§eНовый квест: §6" + quest.name + "§e - " + quest.description);
     }
 
-    public void checkQuests(Player player) {
-        if (activeQuests.containsKey(player)) {
-            player.sendMessage("§aАктивные квесты:");
-            for (Quest quest : activeQuests.get(player)) {
-                player.sendMessage("§6- " + quest.name + ": §e" + quest.progress + "§6/§e" + quest.targetCount);
-            }
+    public void checkQuests(Player player)
+    {
+        if (!activeQuests.containsKey(player)) return;
+
+        player.sendMessage("§aАктивные квесты:");
+        for (Quest quest : activeQuests.get(player)) {
+            player.sendMessage("§6- " + quest.name + ": §e" + quest.progress + "§6/§e" + quest.targetCount);
         }
     }
 
