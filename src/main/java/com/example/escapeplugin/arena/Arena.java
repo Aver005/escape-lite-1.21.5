@@ -62,10 +62,21 @@ public class Arena
         p.sendMessage("§aВы вышли с арены.");
     }
 
+    public void broadcast(String message)
+    {
+        // Проходим по всем игрокам на сервере
+        for (Player player : activePlayers)
+        {
+            // Отправляем сообщение каждому игроку
+            player.sendMessage(message);
+        }
+    }
+
     public boolean isPlaying(Player p) { return this.activePlayers.contains(p); }
 
     // Геттеры и сеттеры
     public String getName() { return name; }
+    public List<Player> getPlayers() { return activePlayers; }
     public List<Location> getChestLocations() { return chestLocations; }
     public List<Location> getLeverLocations() { return leverLocations; }
     public List<Location> getTraderLocations() { return traderLocations; }
