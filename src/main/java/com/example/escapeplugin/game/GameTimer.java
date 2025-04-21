@@ -50,16 +50,31 @@ public class GameTimer
                 timeLeft--;
                 updateBossBar();
 
-                // Уведомления при 50%, 20%, 5% времени
-                if (timeLeft == matchDuration / 2) {
-                    arena.broadcast("§cОсталось 50% времени!");
-                } else if (timeLeft == matchDuration / 4) { // 25% времени
+                if (timeLeft == matchDuration / 2)
+                {
+                    arena.broadcast("§cПоловина матча позади");
+                }
+                else if (timeLeft == matchDuration / 4)
+                {
                     arena.broadcast("§4§lВолна мобов началась!");
-                    BossEvent.startWave(arena, 10); // 10 мобов
-                } else if (timeLeft == matchDuration / 5) {
-                    arena.broadcast("§cОсталось 20% времени!");
-                } else if (timeLeft == matchDuration / 20) {
-                    arena.broadcast("§cОсталось 5% времени!");
+                    BossEvent.startWave(
+                        arena,
+                        10, 2, 0.1,
+                        WaveEffects.DEFAULT
+                    );
+                }
+                else if (timeLeft == matchDuration / 5)
+                {
+                    arena.broadcast("§cОсталось " + timeLeft + " секунд!");
+                    BossEvent.startWave(
+                        arena,
+                        15, 4, 0.3,
+                        new WaveEffects(true, false, true, false)
+                    );
+                }
+                else if (timeLeft == matchDuration / 20)
+                {
+                    arena.broadcast("§cМатч почти подошёл к концу!");
                 }
 
                 if (timeLeft <= 0)
