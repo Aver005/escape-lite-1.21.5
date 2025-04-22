@@ -1,0 +1,174 @@
+quests:
+  # ============ Квесты на убийство игроков (PvP) ============
+  - type: KILL
+    name: "Охотник"
+    targetCount: 3
+    description: "Убейте 3 игроков"
+
+  - type: KILL
+    name: "Охотник-эксперт"
+    targetCount: 5
+    description: "Убейте 5 игроков"
+
+  - type: KILL
+    name: "Легендарный дуэлянт"
+    targetCount: 10
+    description: "Убейте 10 игроков"
+
+  # ============ Квесты на убийство мобов ============
+  - type: MOB_HUNT
+    name: "Истребитель зомби"
+    targetCount: 5
+    mobType: ZOMBIE
+    description: "Убейте 5 зомби"
+
+  - type: MOB_HUNT
+    name: "Охотник на скелетов"
+    targetCount: 3
+    mobType: SKELETON
+    description: "Убейте 3 скелетов"
+
+  - type: MOB_HUNT
+    name: "Убийца дракона"
+    targetCount: 1
+    mobType: ENDER_DRAGON
+    description: "Убейте Эндер-дракона"
+
+  - type: MOB_HUNT
+    name: "Истребитель иссушителей"
+    targetCount: 3
+    mobType: WITHER
+    description: "Убейте 3 иссушителей"
+
+  - type: MOB_HUNT
+    name: "Взрывной эксперт"
+    targetCount: 10
+    mobType: CREEPER
+    description: "Убейте 10 криперов"
+
+  - type: MOB_HUNT
+    name: "Охотник на эндерменов"
+    targetCount: 5
+    mobType: ENDERMAN
+    description: "Убейте 5 эндерменов"
+
+  - type: MOB_HUNT
+    name: "Паучья чума"
+    targetCount: 20
+    mobType: SPIDER
+    description: "Убейте 20 пауков"
+
+  # ============ Квесты на сбор ресурсов ============
+  - type: GATHER
+    name: "Алмазный искатель"
+    targetCount: 5
+    material: DIAMOND
+    description: "Соберите 5 алмазов"
+
+  - type: GATHER
+    name: "Искатель изумрудов"
+    targetCount: 10
+    material: EMERALD
+    description: "Соберите 10 изумрудов"
+
+  - type: GATHER
+    name: "Железный магнат"
+    targetCount: 20
+    material: IRON_INGOT
+    description: "Соберите 20 железных слитков"
+
+  - type: GATHER
+    name: "Золотой запас"
+    targetCount: 15
+    material: GOLD_INGOT
+    description: "Соберите 15 золотых слитков"
+
+  - type: GATHER
+    name: "Незеритовый охотник"
+    targetCount: 4
+    material: NETHERITE_SCRAP
+    description: "Соберите 4 незерита"
+
+  - type: GATHER
+    name: "Ловец огня"
+    targetCount: 3
+    material: BLAZE_ROD
+    description: "Соберите 3 стержня ифрита"
+
+  - type: GATHER
+    name: "Коллекционер жемчуга"
+    targetCount: 8
+    material: ENDER_PEARL
+    description: "Соберите 8 жемчугов Эндера"
+
+  # ============ Квесты на добычу (копание блоков) ============
+  - type: MINING
+    name: "Алмазный шахтер"
+    targetCount: 3
+    material: DIAMOND_ORE
+    description: "Добудьте 3 алмазные руды"
+
+  - type: MINING
+    name: "Изумрудный шахтер"
+    targetCount: 5
+    material: EMERALD_ORE
+    description: "Добудьте 5 изумрудных руд"
+
+  - type: MINING
+    name: "Незеритовый копатель"
+    targetCount: 2
+    material: ANCIENT_DEBRIS
+    description: "Добудьте 2 древних обломка"
+
+  - type: MINING
+    name: "Красный электрик"
+    targetCount: 15
+    material: REDSTONE_ORE
+    description: "Добудьте 15 редстоуновых руд"
+
+  - type: MINING
+    name: "Синий геолог"
+    targetCount: 10
+    material: LAPIS_ORE
+    description: "Добудьте 10 лазуритовых руд"
+
+  # ============ Квесты на путешествия ============
+  - type: TRAVEL
+    name: "Таинственный остров"
+    x: 100
+    y: 70
+    z: -200
+    world: world
+    description: "Доберитесь до таинственного острова (100, 70, -200)"
+
+  - type: TRAVEL
+    name: "Дальние земли"
+    x: 0
+    y: 80
+    z: 1000
+    world: world
+    description: "Доберитесь до дальних земель (0, 80, 1000)"
+
+  - type: TRAVEL
+    name: "Затерянный каньон"
+    x: -300
+    y: 65
+    z: 500
+    world: world
+    description: "Найдите затерянный каньон (-300, 65, 500)"
+
+  - type: TRAVEL
+    name: "Горная вершина"
+    x: 200
+    y: 120
+    z: -800
+    world: world
+    description: "Взойдите на горную вершину (200, 120, -800)"
+
+  - type: TRAVEL
+    name: "Край света"
+    x: 1500
+    y: 70
+    z: 1500
+    world: world
+    description: "Доберитесь до края света (1500, 70, 1500)"

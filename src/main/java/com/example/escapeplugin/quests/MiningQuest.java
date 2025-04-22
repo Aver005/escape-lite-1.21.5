@@ -10,9 +10,9 @@ public class MiningQuest extends Quest
 {
     private final Material targetMaterial;
 
-    public MiningQuest(Material targetMaterial, int count)
+    public MiningQuest(String name, Material targetMaterial, int count)
     {
-        super("Шахтер", "Добудьте " + count + " железной руды", count);
+        super(name, "Добудьте " + count + " железной руды", count);
         this.targetMaterial = targetMaterial;
     }
 

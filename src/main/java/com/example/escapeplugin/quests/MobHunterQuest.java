@@ -11,9 +11,9 @@ public class MobHunterQuest extends Quest
 {
     private final EntityType targetMob;
 
-    public MobHunterQuest(int count, EntityType targetMob)
+    public MobHunterQuest(String name, int count, EntityType targetMob)
     {
-        super("Охотник на монстров", "Убейте " + count + " криперов", count);
+        super(name, "Убейте " + count + " криперов", count);
         this.targetMob = targetMob;
     }
 

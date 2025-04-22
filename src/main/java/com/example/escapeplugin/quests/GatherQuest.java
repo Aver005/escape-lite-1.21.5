@@ -11,9 +11,9 @@ public class GatherQuest extends Quest
 {
     private final Material targetMaterial;
 
-    public GatherQuest(Material targetMaterial, int count)
+    public GatherQuest(String name, Material targetMaterial, int count)
     {
-        super("Шахтер", "Соберите " + count + " алмазов", count);
+        super(name, "Соберите " + count + " алмазов", count);
         this.targetMaterial = targetMaterial;
     }
 

@@ -12,9 +12,9 @@ public class TravelQuest extends Quest
     private final Location targetLocation;
     private final int radius;
 
-    public TravelQuest(Location targetLocation)
+    public TravelQuest(String name, Location targetLocation)
     {
-        super("Путешественник", "Доберитесь до таинственного острова", 1);
+        super(name, "Доберитесь до таинственного острова", 1);
         this.radius = 5;
         this.targetLocation = targetLocation;
     }

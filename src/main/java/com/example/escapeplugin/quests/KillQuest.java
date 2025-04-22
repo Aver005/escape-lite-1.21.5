@@ -10,9 +10,9 @@ public class KillQuest extends Quest
 {
     private final int count = 10;
 
-    public KillQuest(int count)
+    public KillQuest(String name, int count)
     {
-        super("Охотник", "Убейте " + count + " игроков", count);
+        super(name, "Убейте " + count + " игроков", count);
     }
 
     @EventHandler
