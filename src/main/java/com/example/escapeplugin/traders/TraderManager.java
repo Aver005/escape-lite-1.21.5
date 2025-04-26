@@ -13,6 +13,9 @@ import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.example.escapeplugin.EscapePlugin;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,13 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class TraderManager {
+public class TraderManager 
+{
     private Map<String, Trader> traders = new HashMap<>();
     private Random random = new Random();
     private FileConfiguration config;
     private File configFile;
 
-    public TraderManager(JavaPlugin plugin) {
+    public TraderManager() 
+    {
+        JavaPlugin plugin = EscapePlugin.getInstance();
         configFile = new File(plugin.getDataFolder(), "traders.yml");
         if (!configFile.exists()) {
             plugin.saveResource("traders.yml", false);

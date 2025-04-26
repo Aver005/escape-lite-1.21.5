@@ -1,5 +1,6 @@
 package com.example.escapeplugin.listeners;
 
+import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.arena.Arena;
 import com.example.escapeplugin.arena.ArenaManager;
 import org.bukkit.entity.Item;
@@ -10,11 +11,12 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class ItemDropListener implements Listener {
+public class ItemDropListener implements Listener 
+{
     private final ArenaManager arenaManager;
 
-    public ItemDropListener(ArenaManager arenaManager) {
-        this.arenaManager = arenaManager;
+    public ItemDropListener() {
+        this.arenaManager = EscapePlugin.getInstance().getArenaManager();
     }
 
     @EventHandler

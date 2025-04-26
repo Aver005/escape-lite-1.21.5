@@ -25,9 +25,9 @@ public class ArenaManager
     private File configFile;
     private FileConfiguration config;
 
-    public ArenaManager(EscapePlugin plugin)
+    public ArenaManager()
     {
-        this.plugin = plugin;
+        this.plugin = EscapePlugin.getInstance();
         loadConfig();
         loadArenas();
     }
@@ -67,6 +67,7 @@ public class ArenaManager
     private void saveArenaToConfig(Arena arena)
     {
         String path = "arenas." + arena.getName() + ".";
+        config.set(path + "refill_interval", arena.getChestRefillInterval());
         config.set(path + "spawns", arena.getPlayerSpawns());
         config.set(path + "chests", arena.getChestLocations());
         config.set(path + "levers", arena.getLeverLocations());
@@ -89,6 +90,12 @@ public class ArenaManager
         for (String name : config.getConfigurationSection("arenas").getKeys(false))
         {
             Arena arena = new Arena(name, this);
+            String path = "arenas." + name + ".";
+            
+            // Загружаем интервал перезаполнения (по умолчанию 300 секунд)
+            int refillInterval = config.getInt(path + "refill_interval", 300);
+            arena.setChestRefillInterval(refillInterval);
+            
             // Загрузка остальных локаций (сундуки, рычаги, торговцы)
             arenas.put(name, arena);
         }
@@ -107,12 +114,16 @@ public class ArenaManager
                 lootManager.fillChest(chest.getBlockInventory(), chestLoc.getLootCategory());
             }
         }
+        
+        // Запускаем таймер перезаполнения
+        arena.startChestRefillTimer(this);
     }
 
-    public void setupPlayers(Arena arena) {
+    public void setupPlayers(Arena arena) 
+    {
         // Выдаем спавн-блоки всем игрокам
-        for (Player player : arena.getPlayers()) {
-            ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
+        for (Player player : arena.getPlayers()) 
+        {
             // Даем игроку спавн-блок
             player.getInventory().addItem(new ItemStack(Material.BEDROCK, 1));
             player.sendMessage("§aВы получили спавн-блок! Установите его для точки возрождения.");

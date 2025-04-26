@@ -1,5 +1,6 @@
 package com.example.escapeplugin.commands;
 
+import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.gui.TraderEditorGUI;
 import com.example.escapeplugin.traders.TraderManager;
 import org.bukkit.Bukkit;
@@ -21,8 +22,8 @@ public class TraderEditorCommand implements CommandExecutor, Listener {
     private final TraderManager traderManager;
     private TraderEditorGUI currentGUI;
 
-    public TraderEditorCommand(TraderManager traderManager) {
-        this.traderManager = traderManager;
+    public TraderEditorCommand() {
+        this.traderManager = EscapePlugin.getInstance().getTraderManager();
     }
 
     @Override
@@ -38,7 +39,7 @@ public class TraderEditorCommand implements CommandExecutor, Listener {
             return true;
         }
 
-        currentGUI = new TraderEditorGUI(traderManager, player);
+        currentGUI = new TraderEditorGUI(EscapePlugin.getInstance().getTraderManager(), player);
         currentGUI.open();
         return true;
     }
@@ -82,7 +83,7 @@ public class TraderEditorCommand implements CommandExecutor, Listener {
                 player.sendMessage("§aСоздание нового торговца...");
                 break;
             case 50: // Сохранить
-                traderManager.saveTraders();
+                EscapePlugin.getInstance().getTraderManager().saveTraders();
                 player.sendMessage("§aИзменения сохранены!");
                 break;
             case 40: // Добавить предмет
@@ -120,7 +121,7 @@ public class TraderEditorCommand implements CommandExecutor, Listener {
                 String traderId = player.getMetadata("trader_adding_item").get(0).asString();
                 ItemStack item = (ItemStack) player.getMetadata("item_to_add").get(0).value();
                 
-                TraderManager.Trader trader = traderManager.getTraders().get(traderId);
+                TraderManager.Trader trader = EscapePlugin.getInstance().getTraderManager().getTraders().get(traderId);
                 if (trader != null) {
                     trader.addItem(item, price);
                     player.sendMessage("§aПредмет успешно добавлен торговцу!");

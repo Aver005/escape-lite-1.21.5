@@ -19,10 +19,10 @@ public class EscapeCommand implements CommandExecutor
     private final ArenaManager arenaManager;
     private final QuestManager questManager;
 
-    public EscapeCommand(ArenaManager arenaManager, QuestManager questManager)
+    public EscapeCommand()
     {
-        this.arenaManager = arenaManager;
-        this.questManager = questManager;
+        this.arenaManager = EscapePlugin.getInstance().getArenaManager();
+        this.questManager = EscapePlugin.getInstance().getQuestManager();
     }
 
     @Override
@@ -49,7 +49,7 @@ public class EscapeCommand implements CommandExecutor
         }
 
         if (!commandType.validateArgs(player, args)) return true;
-        commandType.execute(player, args, arenaManager, questManager);
+        commandType.execute(player, args);
         return true;
     }
 
@@ -67,10 +67,10 @@ public class EscapeCommand implements CommandExecutor
             "setup",
             "§6/es setup <название> §7- Получить предметы для настройки арены",
             2,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
-                Arena arena = arenaManager.getArena(args[1]);
-                if (arena == null) 
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
+                if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
                     return;
@@ -86,9 +86,9 @@ public class EscapeCommand implements CommandExecutor
             "create",
             "§6/es create <название> §7- Создать арену",
             2,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
-                arenaManager.createArena(args[1]);
+                EscapePlugin.getInstance().getArenaManager().createArena(args[1]);
                 player.sendMessage("§aАрена §6" + args[1] + "§a создана!");
             }
         ),
@@ -97,9 +97,9 @@ public class EscapeCommand implements CommandExecutor
             "remove",
             "§6/es remove <название> §7- Удалить арену",
             2,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
-                arenaManager.removeArena(args[1]);
+                EscapePlugin.getInstance().getArenaManager().removeArena(args[1]);
                 player.sendMessage("§aАрена §6" + args[1] + "§a удалена!");
             }
         ),
@@ -108,9 +108,9 @@ public class EscapeCommand implements CommandExecutor
             "join",
             "§6/es join <название> §7- Войти в арену",
             2,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
-                Arena arena = arenaManager.getArena(args[1]);
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
                 if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
@@ -125,7 +125,7 @@ public class EscapeCommand implements CommandExecutor
             "leave",
             "§6/es leave §7- Выйти с арены",
             1,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
                 ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
                 if (arenaPlayer == null) return;
@@ -145,9 +145,9 @@ public class EscapeCommand implements CommandExecutor
             "addchest",
             "§6/es addchest <арена> §7- Добавить сундук",
             2,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
-                Arena arena = arenaManager.getArena(args[1]);
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
                 if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
@@ -162,9 +162,9 @@ public class EscapeCommand implements CommandExecutor
             "addtrader",
             "§6/es addtrader <арена> <тип> §7- Добавить торговца",
             3,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
-                Arena arena = arenaManager.getArena(args[1]);
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
                 if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
@@ -179,23 +179,23 @@ public class EscapeCommand implements CommandExecutor
             "quests",
             "§6/es quests §7- Проверить квесты",
             1,
-            (player, args, arenaManager, questManager) -> questManager.checkQuests(player)
+            (player, args) -> EscapePlugin.getInstance().getQuestManager().checkQuests(player)
         ),
 
         MENU(
             "menu",
             "§6/es menu §7- Открыть меню квестов",
             1,
-            (player, args, arenaManager, questManager) -> QuestGUI.open(player, questManager)
+            (player, args) -> QuestGUI.open(player, EscapePlugin.getInstance().getQuestManager())
         ),
 
         MIN_PLAYERS(
             "setmin",
             "§6/es setmin <арена> <количество> §7- Открыть меню квестов",
             3,
-            (player, args, arenaManager, questManager) ->
+            (player, args) ->
             {
-                Arena arena = arenaManager.getArena(args[1]);
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
                 if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
@@ -234,13 +234,9 @@ public class EscapeCommand implements CommandExecutor
             return true;
         }
 
-        public void execute(
-            Player player, String[] args,
-            ArenaManager arenaManager,
-            QuestManager questManager
-        )
+        public void execute(Player player, String[] args)
         {
-            callback.accept(player, args, arenaManager, questManager);
+            callback.accept(player, args);
         }
 
         public static CommandType fromString(String text)
@@ -258,9 +254,6 @@ public class EscapeCommand implements CommandExecutor
     @FunctionalInterface
     private interface CommandExecutorCallback
     {
-        void accept(
-            Player player, String[] args,
-            ArenaManager arenaManager, QuestManager questManager
-        );
+        void accept(Player player, String[] args);
     }
 }

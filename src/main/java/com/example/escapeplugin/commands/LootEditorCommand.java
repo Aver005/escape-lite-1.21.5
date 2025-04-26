@@ -1,17 +1,14 @@
 package com.example.escapeplugin.commands;
 
+import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.gui.LootEditorGUI;
-import com.example.escapeplugin.loot.LootManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class LootEditorCommand implements CommandExecutor {
-    private final LootManager lootManager;
-
-    public LootEditorCommand(LootManager lootManager) {
-        this.lootManager = lootManager;
+    public LootEditorCommand() {
     }
 
     @Override
@@ -27,7 +24,7 @@ public class LootEditorCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        new LootEditorGUI(lootManager, player).open();
+        new LootEditorGUI(EscapePlugin.getInstance().getLootManager(), player).open();
         return true;
     }
 }

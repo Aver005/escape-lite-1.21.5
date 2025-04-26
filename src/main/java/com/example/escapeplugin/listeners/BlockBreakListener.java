@@ -1,6 +1,5 @@
 package com.example.escapeplugin.listeners;
 
-import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.arena.ArenaPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,73 +17,58 @@ import org.bukkit.ChatColor;
 
 public class BlockBreakListener implements Listener
 {
-    private final EscapePlugin plugin;
-
-    public BlockBreakListener(EscapePlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
+    public void onBlockBreak(BlockBreakEvent event) 
+    {
         Player player = event.getPlayer();
-        ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
-        
-        // Если игрок не в матче - разрешаем стандартное поведение
+        ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);    
         if (!arenaPlayer.isPlaying()) return;
-        
-        // Проверяем, является ли блок спавн-блоком игрока
+    
         Location blockLoc = event.getBlock().getLocation();
-        Location spawnBlockLoc = arenaPlayer.getSpawnBlockLocation();
         
-        // Check if block is any player's spawn block
         for (Player otherPlayer : arenaPlayer.getArena().getPlayers()) {
             ArenaPlayer otherArenaPlayer = ArenaPlayer.getPlayer(otherPlayer);
             Location otherSpawnBlock = otherArenaPlayer.getSpawnBlockLocation();
             
-            if (otherSpawnBlock != null && blockLoc.equals(otherSpawnBlock)) {
-                if (otherPlayer.equals(player)) {
-                    // Player broke their own spawn block
+            if (otherSpawnBlock != null && blockLoc.equals(otherSpawnBlock)) 
+            {
+                if (otherPlayer.equals(player)) 
+                {
                     arenaPlayer.setSpawnBlockLocation(null);
                     player.sendMessage("§aВы сломали свой спавн-блок!");
-                } else {
-                    // Player broke another player's spawn block
-                    otherArenaPlayer.setSpawnBlockLocation(null);
-                    player.sendMessage("§aВы сломали спавн-блок игрока " + otherPlayer.getName() + "!");
-                    // Титры для владельца блока
-                    otherPlayer.sendTitle(
-                        "",
-                        ChatColor.RED + "Ваш спавн-блок уничтожен",
-                        10, 70, 20
-                    );
-                    otherPlayer.sendMessage("§cВаш спавн-блок был уничтожен!");
-                }
+                    return;
+                } 
+
+                otherArenaPlayer.setSpawnBlockLocation(null);
+                player.sendMessage("§aВы сломали спавн-блок игрока " + otherPlayer.getName() + "!");
+                otherPlayer.sendTitle(
+                    "",
+                    ChatColor.RED + "Ваш спавн-блок уничтожен",
+                    10, 70, 20
+                );
+                otherPlayer.sendMessage("§cВаш спавн-блок был уничтожен!");
+                event.setDropItems(false);
                 return;
             }
         }
-        
-        // Запрещаем ломать другие блоки во время матча
+
         event.setCancelled(true);
-        player.sendMessage("§cВы не можете ломать блоки во время матча!");
     }
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onBlockPlace(BlockPlaceEvent event) 
+    {
         Player player = event.getPlayer();
         ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
-        
-        // Если игрок не в матче - разрешаем стандартное поведение
         if (!arenaPlayer.isPlaying()) return;
         
-        // Проверяем, является ли блок спавн-блоком
-        if (event.getBlock().getType() == Material.BEDROCK) {
-            // Устанавливаем новый спавн-блок
+        if (event.getBlock().getType() == Material.BEDROCK) 
+        {
             arenaPlayer.setSpawnBlockLocation(event.getBlock().getLocation());
             player.sendMessage("§aВы установили новый спавн-блок!");
             
-            // Глобальное уведомление
             Bukkit.broadcastMessage(ChatColor.GOLD + "Игрок " + player.getName() + " установил спавн-блок!");
             
-            // Титры для игрока
             player.sendTitle(
                 "",
                 ChatColor.GREEN + "Спавн-блок установлен",
@@ -93,9 +77,7 @@ public class BlockBreakListener implements Listener
             return;
         }
         
-        // Запрещаем ставить другие блоки во время матча
         event.setCancelled(true);
-        player.sendMessage("§cВы не можете ставить блоки во время матча!");
     }
 
     @EventHandler

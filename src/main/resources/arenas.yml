@@ -1,5 +1,6 @@
 arenas:
   default:
+    refill_interval: 300 # 5 минут в секундах
     spawn:
       world: world
       x: 0.5

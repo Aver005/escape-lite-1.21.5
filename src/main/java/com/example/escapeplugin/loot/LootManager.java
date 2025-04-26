@@ -4,6 +4,9 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import com.example.escapeplugin.EscapePlugin;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -13,7 +16,9 @@ public class LootManager
     private final File configFile;
     private YamlConfiguration config;
 
-    public LootManager(File dataFolder) {
+    public LootManager() 
+    {
+        File dataFolder = EscapePlugin.getInstance().getDataFolder();
         this.configFile = new File(dataFolder, "loot.yml");
         loadConfig();
     }

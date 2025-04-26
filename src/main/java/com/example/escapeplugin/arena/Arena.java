@@ -1,5 +1,6 @@
 package com.example.escapeplugin.arena;
 
+import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.game.GameTimer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -7,6 +8,7 @@ import org.bukkit.entity.Villager;
 import org.bukkit.entity.Item;
 import org.bukkit.block.Block;
 import org.bukkit.Material;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +22,8 @@ public class Arena
     private GameTimer gameTimer;
     private int minPlayersToStart = 2;
     private int matchDuration = 720;
+    private int chestRefillInterval = 300; // 5 минут по умолчанию
+    private BukkitRunnable chestRefillTask;
 
     private List<Location> playerSpawns = new ArrayList<>();
     private List<ChestLocation> chestLocations = new ArrayList<>();
@@ -155,4 +159,32 @@ public class Arena
     }
     public void setMinPlayersToStart(int count) { minPlayersToStart = count; }
     public void setMatchDuration(int duration) { matchDuration = duration; }
+    
+    public int getChestRefillInterval() { return chestRefillInterval; }
+    public void setChestRefillInterval(int interval) { chestRefillInterval = interval; }
+    
+    public void startChestRefillTimer(ArenaManager arenaManager) {
+        if (chestRefillTask != null) {
+            chestRefillTask.cancel();
+        }
+        
+        chestRefillTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                arenaManager.spawnChests(Arena.this);
+                broadcast("§aСундуки были перезаполнены!");
+            }
+        };
+        chestRefillTask.runTaskTimer(EscapePlugin.getInstance(),
+            chestRefillInterval * 20L, // Начальная задержка (секунды -> тики)
+            chestRefillInterval * 20L  // Период повторения
+        );
+    }
+    
+    public void stopChestRefillTimer() {
+        if (chestRefillTask != null) {
+            chestRefillTask.cancel();
+            chestRefillTask = null;
+        }
+    }
 }

@@ -11,7 +11,6 @@ import com.example.escapeplugin.listeners.ItemDropListener;
 import com.example.escapeplugin.listeners.PlayerRespawnListener;
 import com.example.escapeplugin.loot.LootManager;
 import com.example.escapeplugin.quests.*;
-import com.example.escapeplugin.traders.TraderManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class EscapePlugin extends JavaPlugin 
@@ -31,24 +30,24 @@ public class EscapePlugin extends JavaPlugin
         if (!getDataFolder().exists()) getDataFolder().mkdir();
 
         instance = this;
-        arenaManager = new ArenaManager(this);
+        arenaManager = new ArenaManager();
         questManager = new QuestManager();
-        lootManager = new LootManager(getDataFolder());
-        traderManager = new TraderManager(this);
+        lootManager = new LootManager();
+        traderManager = new TraderManager();
         traderManager.loadTraders();
         
-        traderEditorCommand = new TraderEditorCommand(traderManager);
+        traderEditorCommand = new TraderEditorCommand();
         getCommand("tradeditor").setExecutor(traderEditorCommand);
         getServer().getPluginManager().registerEvents(traderEditorCommand, this);
 
         questLoader = new QuestLoader(this);
         questLoader.registerQuests();
 
-        getCommand("es").setExecutor(new EscapeCommand(arenaManager, questManager));
-        getCommand("looteditor").setExecutor(new LootEditorCommand(lootManager));
-        getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
+        getCommand("es").setExecutor(new EscapeCommand());
+        getCommand("looteditor").setExecutor(new LootEditorCommand());
+        getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnListener(), this);
-        getServer().getPluginManager().registerEvents(new ItemDropListener(arenaManager), this);
+        getServer().getPluginManager().registerEvents(new ItemDropListener(), this);
 
         getLogger().info("Плагин Escape успешно загружен!");
     }
@@ -76,5 +75,9 @@ public class EscapePlugin extends JavaPlugin
 
     public TraderManager getTraderManager() {
         return traderManager;
+    }
+
+    public QuestLoader getQuestLoader() {
+        return questLoader;
     }
 }
