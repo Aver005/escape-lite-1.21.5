@@ -4,6 +4,9 @@ import com.example.escapeplugin.game.GameTimer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
+import org.bukkit.entity.Item;
+import org.bukkit.block.Block;
+import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +26,7 @@ public class Arena
     private List<Location> leverLocations = new ArrayList<>();
     private List<TraderLocation> traderLocations = new ArrayList<>();
     private List<Villager> spawnedTraders = new ArrayList<>();
+    private List<Item> droppedItems = new ArrayList<>();
 
     private List<Location> freeSpawns = new ArrayList<>();
     private List<Player> activePlayers = new ArrayList<>();
@@ -115,6 +119,39 @@ public class Arena
     public void clearTraders() {
         spawnedTraders.forEach(Villager::remove);
         spawnedTraders.clear();
+    }
+
+    public void addDroppedItem(Item item) {
+        droppedItems.add(item);
+    }
+
+    public void clearDroppedItems() {
+        droppedItems.forEach(Item::remove);
+        droppedItems.clear();
+    }
+
+    public void clearChests() {
+        for (ChestLocation chestLoc : chestLocations) {
+            Block block = chestLoc.getLocation().getBlock();
+            if (block.getType() == Material.CHEST) {
+                block.setType(Material.AIR);
+            }
+        }
+    }
+
+    public void cleanupAfterMatch() {
+        clearTraders();
+        clearDroppedItems();
+        clearChests();
+        
+        // Очищаем спавн-блоки игроков
+        for (Player player : activePlayers) {
+            Location blockLoc = playersBlock.get(player);
+            if (blockLoc != null && blockLoc.getBlock().getType() == Material.BEDROCK) {
+                blockLoc.getBlock().setType(Material.AIR);
+            }
+        }
+        playersBlock.clear();
     }
     public void setMinPlayersToStart(int count) { minPlayersToStart = count; }
     public void setMatchDuration(int duration) { matchDuration = duration; }

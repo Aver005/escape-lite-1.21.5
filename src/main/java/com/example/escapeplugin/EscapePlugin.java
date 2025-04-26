@@ -7,6 +7,8 @@ import com.example.escapeplugin.arena.ArenaManager;
 import com.example.escapeplugin.commands.EscapeCommand;
 import com.example.escapeplugin.commands.LootEditorCommand;
 import com.example.escapeplugin.listeners.BlockBreakListener;
+import com.example.escapeplugin.listeners.ItemDropListener;
+import com.example.escapeplugin.listeners.PlayerRespawnListener;
 import com.example.escapeplugin.loot.LootManager;
 import com.example.escapeplugin.quests.*;
 import com.example.escapeplugin.traders.TraderManager;
@@ -45,6 +47,8 @@ public class EscapePlugin extends JavaPlugin
         getCommand("es").setExecutor(new EscapeCommand(arenaManager, questManager));
         getCommand("looteditor").setExecutor(new LootEditorCommand(lootManager));
         getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerRespawnListener(), this);
+        getServer().getPluginManager().registerEvents(new ItemDropListener(arenaManager), this);
 
         getLogger().info("Плагин Escape успешно загружен!");
     }

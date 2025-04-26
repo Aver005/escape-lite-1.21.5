@@ -82,6 +82,7 @@ public class GameTimer
                     arena.broadcast("§4Матч завершен!");
                     bossBar.removeAll();
                     cancel();
+                    arena.cleanupAfterMatch();
                 }
             }
         }.runTaskTimer(EscapePlugin.getInstance(), 0, 20); // 20 тиков = 1 секунда

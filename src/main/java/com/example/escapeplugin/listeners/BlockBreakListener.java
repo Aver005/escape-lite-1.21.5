@@ -14,6 +14,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.ChatColor;
 
 public class BlockBreakListener implements Listener
 {
@@ -35,12 +36,30 @@ public class BlockBreakListener implements Listener
         Location blockLoc = event.getBlock().getLocation();
         Location spawnBlockLoc = arenaPlayer.getSpawnBlockLocation();
         
-        if (spawnBlockLoc != null &&
-            blockLoc.equals(spawnBlockLoc)) {
-            // Игрок ломает свой спавн-блок - разрешаем
-            arenaPlayer.setSpawnBlockLocation(null);
-            player.sendMessage("§aВы сломали свой спавн-блок!");
-            return;
+        // Check if block is any player's spawn block
+        for (Player otherPlayer : arenaPlayer.getArena().getPlayers()) {
+            ArenaPlayer otherArenaPlayer = ArenaPlayer.getPlayer(otherPlayer);
+            Location otherSpawnBlock = otherArenaPlayer.getSpawnBlockLocation();
+            
+            if (otherSpawnBlock != null && blockLoc.equals(otherSpawnBlock)) {
+                if (otherPlayer.equals(player)) {
+                    // Player broke their own spawn block
+                    arenaPlayer.setSpawnBlockLocation(null);
+                    player.sendMessage("§aВы сломали свой спавн-блок!");
+                } else {
+                    // Player broke another player's spawn block
+                    otherArenaPlayer.setSpawnBlockLocation(null);
+                    player.sendMessage("§aВы сломали спавн-блок игрока " + otherPlayer.getName() + "!");
+                    // Титры для владельца блока
+                    otherPlayer.sendTitle(
+                        "",
+                        ChatColor.RED + "Ваш спавн-блок уничтожен",
+                        10, 70, 20
+                    );
+                    otherPlayer.sendMessage("§cВаш спавн-блок был уничтожен!");
+                }
+                return;
+            }
         }
         
         // Запрещаем ломать другие блоки во время матча
@@ -61,6 +80,16 @@ public class BlockBreakListener implements Listener
             // Устанавливаем новый спавн-блок
             arenaPlayer.setSpawnBlockLocation(event.getBlock().getLocation());
             player.sendMessage("§aВы установили новый спавн-блок!");
+            
+            // Глобальное уведомление
+            Bukkit.broadcastMessage(ChatColor.GOLD + "Игрок " + player.getName() + " установил спавн-блок!");
+            
+            // Титры для игрока
+            player.sendTitle(
+                "",
+                ChatColor.GREEN + "Спавн-блок установлен",
+                10, 70, 20
+            );
             return;
         }
         
@@ -75,8 +104,21 @@ public class BlockBreakListener implements Listener
         if (killer != null) {
             // Эффект молнии
             killer.getWorld().strikeLightningEffect(killer.getLocation());
-            // Уведомление в чат
+            // Уведомление в чат и титры
             Bukkit.broadcastMessage("§c" + killer.getName() + " убил " + event.getEntity().getName() + "!");
+            
+            // Титры для убийцы
+            killer.sendTitle(
+                "",
+                ChatColor.RED + "Вы убили " + event.getEntity().getName(),
+                10, 70, 20
+            );
+            
+            event.getEntity().sendTitle(
+                "",
+                ChatColor.RED + "Вас убил " + killer.getName(),
+                10, 70, 20
+            );
         }
     }
 
