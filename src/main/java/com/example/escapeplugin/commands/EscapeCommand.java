@@ -1,7 +1,10 @@
 package com.example.escapeplugin.commands;
 
+import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.arena.Arena;
 import com.example.escapeplugin.arena.ArenaManager;
+import com.example.escapeplugin.arena.ArenaPlayer;
+import com.example.escapeplugin.arena.SetupTools;
 import com.example.escapeplugin.gui.QuestGUI;
 import com.example.escapeplugin.quests.QuestManager;
 import org.bukkit.command.Command;
@@ -25,13 +28,11 @@ public class EscapeCommand implements CommandExecutor
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
-        if (!(sender instanceof Player))
+        if (!(sender instanceof Player player))
         {
             sender.sendMessage("§cТолько игроки могут использовать эту команду!");
             return true;
         }
-
-        Player player = (Player) sender;
 
         if (args.length == 0)
         {
@@ -62,6 +63,25 @@ public class EscapeCommand implements CommandExecutor
 
     private enum CommandType
     {
+        SETUP(
+            "setup",
+            "§6/es setup <название> §7- Получить предметы для настройки арены",
+            2,
+            (player, args, arenaManager, questManager) ->
+            {
+                Arena arena = arenaManager.getArena(args[1]);
+                if (arena == null) 
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+                
+                SetupTools setupTools = new SetupTools();
+                setupTools.giveSetupTools(player);
+                player.sendMessage("§aИспользуйте полученные предметы для настройки арены!");
+            }
+        ),
+
         CREATE(
             "create",
             "§6/es create <название> §7- Создать арену",
@@ -69,7 +89,18 @@ public class EscapeCommand implements CommandExecutor
             (player, args, arenaManager, questManager) ->
             {
                 arenaManager.createArena(args[1]);
-                player.sendMessage("§aАрена §6" + args[1] + " §aсоздана!");
+                player.sendMessage("§aАрена §6" + args[1] + "§a создана!");
+            }
+        ),
+
+        REMOVE(
+            "remove",
+            "§6/es remove <название> §7- Удалить арену",
+            2,
+            (player, args, arenaManager, questManager) ->
+            {
+                arenaManager.removeArena(args[1]);
+                player.sendMessage("§aАрена §6" + args[1] + "§a удалена!");
             }
         ),
 
@@ -85,7 +116,28 @@ public class EscapeCommand implements CommandExecutor
                     player.sendMessage("§cАрена не найдена!");
                     return;
                 }
+
                 arena.join(player);
+            }
+        ),
+
+        LEAVE(
+            "leave",
+            "§6/es leave §7- Выйти с арены",
+            1,
+            (player, args, arenaManager, questManager) ->
+            {
+                ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
+                if (arenaPlayer == null) return;
+
+                Arena arena = arenaPlayer.getArena();
+                if (arena == null)
+                {
+                    player.sendMessage("§cВы не в игре.");
+                    return;
+                }
+
+                arena.leave(player);
             }
         ),
 
@@ -135,6 +187,24 @@ public class EscapeCommand implements CommandExecutor
             "§6/es menu §7- Открыть меню квестов",
             1,
             (player, args, arenaManager, questManager) -> QuestGUI.open(player, questManager)
+        ),
+
+        MIN_PLAYERS(
+            "setmin",
+            "§6/es setmin <арена> <количество> §7- Открыть меню квестов",
+            3,
+            (player, args, arenaManager, questManager) ->
+            {
+                Arena arena = arenaManager.getArena(args[1]);
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+                int count = Integer.parseInt(args[2]);
+                arena.setMinPlayersToStart(count);
+                player.sendMessage("§aМинимальное количество игроков для арены §6" + args[1] + "§a установлено!");
+            }
         );
 
         private final String label;

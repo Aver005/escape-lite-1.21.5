@@ -1,0 +1,10 @@
+traders:
+  default:
+    name: "Торговец"
+    items:
+      - material: DIAMOND
+        price: 10
+        amount: 1
+      - material: EMERALD
+        price: 5
+        amount: 3

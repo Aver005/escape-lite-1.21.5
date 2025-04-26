@@ -1,47 +1,91 @@
 package com.example.escapeplugin.loot;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class LootManager
 {
-    private final Map<Material, Integer> commonLoot = new HashMap<>();
-    private final Map<Material, Integer> rareLoot = new HashMap<>();
+    private final File configFile;
+    private YamlConfiguration config;
 
-    public LootManager() {
-        setupLootTables();
+    public LootManager(File dataFolder) {
+        this.configFile = new File(dataFolder, "loot.yml");
+        loadConfig();
     }
 
-    private void setupLootTables() {
-        // Обычный лут (60% шанс)
-        commonLoot.put(Material.IRON_INGOT, 3);
-        commonLoot.put(Material.BREAD, 5);
-        commonLoot.put(Material.STONE_PICKAXE, 1);
-
-        // Редкий лут (20% шанс)
-        rareLoot.put(Material.DIAMOND, 1);
-        rareLoot.put(Material.GOLDEN_APPLE, 1);
-        rareLoot.put(Material.ENDER_PEARL, 2);
-    }
-
-    public void fillChest(Inventory chest) {
-        Random random = new Random();
-        // Очистка сундука
-        chest.clear();
-
-        // Заполнение обычным лутом
-        for (Map.Entry<Material, Integer> entry : commonLoot.entrySet()) {
-            if (random.nextDouble() < 0.6) { // 60% шанс
-                chest.addItem(new ItemStack(entry.getKey(), entry.getValue()));
+    private void loadConfig() {
+        if (!configFile.exists()) {
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
+        config = YamlConfiguration.loadConfiguration(configFile);
+    }
 
-        // Заполнение редким лутом (20% шанс)
-        if (random.nextDouble() < 0.2) {
-            Material rareItem = (Material) rareLoot.keySet().toArray()[random.nextInt(rareLoot.size())];
-            chest.addItem(new ItemStack(rareItem, rareLoot.get(rareItem)));
+    public void saveConfig() {
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    public void fillChest(Inventory chest, String category) {
+        Random random = new Random();
+        chest.clear();
+
+        if (!config.contains("categories." + category)) {
+            category = "COMMON"; // Default category
+        }
+
+        Map<String, Object> items = config.getConfigurationSection("categories." + category + ".items")
+                .getValues(false);
+
+        for (Map.Entry<String, Object> entry : items.entrySet()) {
+            Material material = Material.getMaterial(entry.getKey());
+            if (material == null) continue;
+
+            int amount = config.getInt("categories." + category + ".items." + entry.getKey() + ".amount", 1);
+            double chance = config.getDouble("categories." + category + ".items." + entry.getKey() + ".chance", 0.5);
+
+            if (random.nextDouble() < chance) {
+                chest.addItem(new ItemStack(material, amount));
+            }
+        }
+    }
+
+    public Set<String> getCategories() {
+        if (!config.contains("categories")) {
+            return new HashSet<>();
+        }
+        return config.getConfigurationSection("categories").getKeys(false);
+    }
+
+    public void addCategory(String name) {
+        config.createSection("categories." + name);
+        saveConfig();
+    }
+
+    public void removeCategory(String name) {
+        config.set("categories." + name, null);
+        saveConfig();
+    }
+
+    public void addItemToCategory(String category, Material material, int amount, double chance) {
+        config.set("categories." + category + ".items." + material.name() + ".amount", amount);
+        config.set("categories." + category + ".items." + material.name() + ".chance", chance);
+        saveConfig();
+    }
+
+    public void removeItemFromCategory(String category, Material material) {
+        config.set("categories." + category + ".items." + material.name(), null);
+        saveConfig();
     }
 }

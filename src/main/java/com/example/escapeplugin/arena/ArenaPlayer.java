@@ -31,9 +31,10 @@ public class ArenaPlayer
         return player;
     }
 
-    private  Player player;
+    private Player player;
     private Arena activeArena = null;
     private Location activeSpawn = null;
+    private Location spawnBlockLocation = null;
     private PlayerState savedState = null;
 
     public ArenaPlayer(Player p) { this.player = p; }
@@ -106,7 +107,11 @@ public class ArenaPlayer
     public boolean isPlaying() { return activeArena != null; }
     public Player getPlayer() { return player; }
     public Arena getArena() { return activeArena; }
-    public Location getSpawn() { return activeSpawn; }
+    public Location getSpawn() {
+        return spawnBlockLocation != null ? spawnBlockLocation : activeSpawn;
+    }
+    public Location getSpawnBlockLocation() { return spawnBlockLocation; }
+    public void setSpawnBlockLocation(Location location) { this.spawnBlockLocation = location; }
 
     // Внутренний класс для хранения состояния игрока
     private static class PlayerState

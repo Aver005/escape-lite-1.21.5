@@ -3,35 +3,46 @@ package com.example.escapeplugin.arena;
 import com.example.escapeplugin.game.GameTimer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 public class Arena
 {
     private final String name;
+    private final ArenaManager arenaManager;
     private GameTimer gameTimer;
     private int minPlayersToStart = 2;
+    private int matchDuration = 720;
 
     private List<Location> playerSpawns = new ArrayList<>();
-    private List<Location> chestLocations = new ArrayList<>();
+    private List<ChestLocation> chestLocations = new ArrayList<>();
     private List<Location> leverLocations = new ArrayList<>();
-    private List<Location> traderLocations = new ArrayList<>();
+    private List<TraderLocation> traderLocations = new ArrayList<>();
+    private List<Villager> spawnedTraders = new ArrayList<>();
 
-    private List<Player> activePlayers = new ArrayList<>();
     private List<Location> freeSpawns = new ArrayList<>();
+    private List<Player> activePlayers = new ArrayList<>();
+    private HashMap<Player, Location> playersBlock = new HashMap<>();
 
-    public Arena(String name)
+    public Arena(String name, ArenaManager arenaManager)
     {
         this.name = name;
+        this.arenaManager = arenaManager;
     }
 
     public void startMatch()
     {
-        this.activePlayers.clear();
-        gameTimer = new GameTimer(this, 720); // 12 минут
+        playersBlock.clear();
+        clearTraders();
+        gameTimer = new GameTimer(this, matchDuration); // 12 минут
         gameTimer.start();
+        
+        // Вызываем setupPlayers для выдачи спавн-блоков
+        arenaManager.setupPlayers(this);
     }
 
     public void join(Player p)
@@ -47,6 +58,12 @@ public class Arena
         freeSpawns.remove(spawn);
         player.join(this, spawn);
         p.sendMessage("§aВы вошли на арену §6" + name + "§a!");
+
+        // Автоматический старт игры при наборе минимального количества игроков
+        if (activePlayers.size() >= minPlayersToStart && gameTimer == null) {
+            broadcast("§aДостигнуто минимальное количество игроков! Игра начинается!");
+            startMatch();
+        }
     }
 
     public void leave(Player p )
@@ -77,15 +94,28 @@ public class Arena
     // Геттеры и сеттеры
     public String getName() { return name; }
     public List<Player> getPlayers() { return activePlayers; }
-    public List<Location> getChestLocations() { return chestLocations; }
+    public List<ChestLocation> getChestLocations() { return chestLocations; }
     public List<Location> getLeverLocations() { return leverLocations; }
-    public List<Location> getTraderLocations() { return traderLocations; }
+    public List<TraderLocation> getTraderLocations() { return traderLocations; }
     public List<Location> getPlayerSpawns() { return playerSpawns; }
     public int getMinPlayersToStart() { return minPlayersToStart; }
+    public int getMatchDuration() { return matchDuration; }
 
     public void addPlayerSpawn(Location loc) { playerSpawns.add(loc); }
-    public void addChestLocation(Location loc) { chestLocations.add(loc); }
+    public void addChestLocation(Location loc) { chestLocations.add(new ChestLocation(loc, "COMMON")); }
+    public void addChestLocation(Location loc, String category) { chestLocations.add(new ChestLocation(loc, category)); }
     public void addLeverLocation(Location loc) { leverLocations.add(loc); }
-    public void addTraderLocation(Location loc) { traderLocations.add(loc); }
+    public void addTraderLocation(Location loc) { traderLocations.add(new TraderLocation(loc, "default")); }
+    public void addTraderLocation(Location loc, String traderType) { traderLocations.add(new TraderLocation(loc, traderType)); }
+    
+    public void addSpawnedTrader(Villager trader) {
+        spawnedTraders.add(trader);
+    }
+    
+    public void clearTraders() {
+        spawnedTraders.forEach(Villager::remove);
+        spawnedTraders.clear();
+    }
     public void setMinPlayersToStart(int count) { minPlayersToStart = count; }
+    public void setMatchDuration(int duration) { matchDuration = duration; }
 }

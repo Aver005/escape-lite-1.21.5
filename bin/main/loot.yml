@@ -1,0 +1,31 @@
+categories:
+  COMMON:
+    items:
+      IRON_INGOT:
+        amount: 3
+        chance: 0.6
+      BREAD:
+        amount: 5
+        chance: 0.6
+      STONE_PICKAXE:
+        amount: 1
+        chance: 0.6
+  RARE:
+    items:
+      DIAMOND:
+        amount: 1
+        chance: 0.5
+      GOLDEN_APPLE:
+        amount: 1
+        chance: 0.5
+      ENDER_PEARL:
+        amount: 2
+        chance: 0.5
+  EPIC:
+    items:
+      DIAMOND:
+        amount: 1
+        chance: 0.1
+      EMERALD:
+        amount: 1
+        chance: 0.1
