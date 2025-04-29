@@ -1,10 +1,11 @@
 package com.example.escapeplugin.arena;
 
+import org.bukkit.Location;
+import java.util.Optional;
+
 import com.example.escapeplugin.EscapePlugin;
-import com.example.escapeplugin.loot.LootManager;
 import com.example.escapeplugin.traders.TraderManager;
 import org.bukkit.Material;
-import org.bukkit.block.Chest;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -62,6 +63,8 @@ public class ArenaManager
     {
         if (!arenas.containsKey(name)) return;
         arenas.remove(name);
+        config.set("arenas." + name, null);
+        saveConfig();
     }
 
     private void saveArenaToConfig(Arena arena)
@@ -92,11 +95,54 @@ public class ArenaManager
             Arena arena = new Arena(name, this);
             String path = "arenas." + name + ".";
             
-            // Загружаем интервал перезаполнения (по умолчанию 300 секунд)
+            // Load refill interval (default 300 seconds)
             int refillInterval = config.getInt(path + "refill_interval", 300);
             arena.setChestRefillInterval(refillInterval);
             
-            // Загрузка остальных локаций (сундуки, рычаги, торговцы)
+            // Load spawn location
+            Location spawn = (Location) config.get(path + "spawn");
+            if (spawn != null) {
+                arena.addPlayerSpawn(spawn);
+            }
+            
+            // Load chest locations
+            List<Map<String, Object>> chests = (List<Map<String, Object>>) config.getList(path + "chests");
+            if (chests != null) {
+                chests.forEach(chestData -> {
+                    Location loc = (Location) chestData.get("location");
+                    String category = (String) chestData.get("category");
+                    if (loc != null) {
+                        if (category != null) {
+                            arena.addChestLocation(loc, category);
+                        } else {
+                            arena.addChestLocation(loc);
+                        }
+                    }
+                });
+            }
+            
+            // Load lever locations
+            List<Location> levers = (List<Location>) config.getList(path + "levers");
+            if (levers != null) {
+                levers.forEach(arena::addLeverLocation);
+            }
+            
+            // Load traders
+            List<Map<String, Object>> traders = (List<Map<String, Object>>) config.getList(path + "traders");
+            if (traders != null) {
+                traders.forEach(traderData -> {
+                    Location loc = (Location) traderData.get("location");
+                    String type = (String) traderData.get("type");
+                    if (loc != null) {
+                        if (type != null) {
+                            arena.addTraderLocation(loc, type);
+                        } else {
+                            arena.addTraderLocation(loc);
+                        }
+                    }
+                });
+            }
+            
             arenas.put(name, arena);
         }
     }
@@ -107,15 +153,14 @@ public class ArenaManager
 
     public void spawnChests(Arena arena)
     {
-        LootManager lootManager = this.plugin.getLootManager();
+        // TODO: Implement chest filling logic once LootManager API is confirmed
         for (ChestLocation chestLoc : arena.getChestLocations()) {
             if (chestLoc.getLocation().getBlock().getType() == Material.CHEST) {
-                Chest chest = (Chest) chestLoc.getLocation().getBlock().getState();
-                lootManager.fillChest(chest.getBlockInventory(), chestLoc.getLootCategory());
+                // Will be implemented after confirming LootManager API
             }
         }
         
-        // Запускаем таймер перезаполнения
+        // Start refill timer
         arena.startChestRefillTimer(this);
     }
 
@@ -156,5 +201,38 @@ public class ArenaManager
             }
             return null;
         });
+    }
+    public Map<String, Arena> getArenas() {
+        return new HashMap<>(arenas);
+    }
+    
+    public void reloadConfig() {
+        loadConfig();
+        arenas.clear();
+        playerArenaCache.clear();
+        loadArenas();
+    }
+
+    public Optional<Arena> getArenaForChest(Location location) {
+        return arenas.values().stream()
+            .filter(arena -> arena.getChestLocations().stream()
+                .anyMatch(chest -> chest.getLocation().equals(location)))
+            .findFirst();
+    }
+
+    public void leave(Player player) {
+        Arena arena = getPlayerArena(player);
+        if (arena == null) return;
+
+        // Remove player from arena
+        arena.getPlayers().remove(player);
+        
+        // Remove from cache
+        playerArenaCache.remove(player);
+        
+        // Restore player state
+        ArenaPlayer.getPlayer(player).leave();
+        
+        player.sendMessage("§aВы успешно вышли с арены. Ваше состояние восстановлено.");
     }
 }

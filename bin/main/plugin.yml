@@ -11,7 +11,13 @@ commands:
   tradeditor:
     description: Открывает редактор торговцев
     usage: /tradeditor
+  refillchests:
+    description: Перезаполняет сундуки в аренах
+    usage: /refillchests
 permissions:
   escape.tradereditor:
     description: Позволяет редактировать торговцев
+    default: op
+  escape.refill:
+    description: Позволяет перезаполнять сундуки
     default: op

@@ -5,6 +5,7 @@ import com.example.escapeplugin.gui.LootCategoryGUI;
 import com.example.escapeplugin.gui.TraderSelectionGUI;
 import com.example.escapeplugin.traders.TraderManager;
 import org.bukkit.Material;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -50,7 +51,7 @@ public class SetupTools implements Listener
     }
 
     @EventHandler
-    public void onSetupItemUse(PlayerInteractEvent event) 
+    public void onSetupItemUse(PlayerInteractEvent event)
     {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR) {
             return;
@@ -86,5 +87,26 @@ public class SetupTools implements Listener
                 new LootCategoryGUI(arenaManager, player, arena).open();
             }
         }
+    }
+
+    public void deleteSpawnPoint(Arena arena, Location location) {
+        if (arena.removeNearestSpawn(location, 2.0)) {
+            return;
+        }
+        throw new IllegalStateException("Точка спавна не найдена в радиусе 2 блоков");
+    }
+
+    public void deleteTraderPoint(Arena arena, Location location) {
+        if (arena.removeNearestTrader(location, 2.0)) {
+            return;
+        }
+        throw new IllegalStateException("Торговец не найден в радиусе 2 блоков");
+    }
+
+    public void deleteChestPoint(Arena arena, Location location) {
+        if (arena.removeNearestChest(location, 2.0)) {
+            return;
+        }
+        throw new IllegalStateException("Сундук не найден в радиусе 2 блоков");
     }
 }

@@ -74,17 +74,49 @@ public class Arena
         }
     }
 
-    public void leave(Player p )
+    public void leave(Player player)
     {
-        if (!activePlayers.contains(p)) return;
+        if (!activePlayers.contains(player)) return;
 
-        ArenaPlayer player = ArenaPlayer.getPlayer(p);
-        if (!player.isPlaying()) return;
-        if (!Objects.equals(player.getArena().name, this.getName())) return;
+        ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
+        if (!arenaPlayer.isPlaying()) return;
+        if (!Objects.equals(arenaPlayer.getArena().name, this.getName())) return;
 
-        freeSpawns.add(player.getSpawn());
-        player.leave();
-        p.sendMessage("§aВы вышли с арены.");
+        // Clean up spawn block if exists
+        Location spawnBlock = arenaPlayer.getSpawnBlockLocation();
+        if (spawnBlock != null && spawnBlock.getBlock().getType() == Material.BEDROCK) {
+            spawnBlock.getBlock().setType(Material.AIR);
+        }
+
+        freeSpawns.add(arenaPlayer.getSpawn());
+        activePlayers.remove(player);
+        arenaPlayer.leave();
+        
+        // Notify manager to handle cache cleanup
+        arenaManager.leave(player);
+        
+        // Check if match should end
+        checkMatchEnd();
+    }
+    
+    private void checkMatchEnd() {
+        if (gameTimer == null) return;
+        
+        // Count living players (those still in activePlayers)
+        int livingPlayers = activePlayers.size();
+        
+        if (livingPlayers < 2) {
+            broadcast("§cМатч завершен - осталось слишком мало игроков!");
+            cleanupAfterMatch();
+            gameTimer.stop();
+            gameTimer = null;
+        } else if (livingPlayers == 1) {
+            // Only one living player remains (others have left/died)
+            broadcast("§cМатч завершен - остался только один выживший игрок!");
+            cleanupAfterMatch();
+            gameTimer.stop();
+            gameTimer = null;
+        }
     }
 
     public void broadcast(String message)
@@ -115,6 +147,63 @@ public class Arena
     public void addLeverLocation(Location loc) { leverLocations.add(loc); }
     public void addTraderLocation(Location loc) { traderLocations.add(new TraderLocation(loc, "default")); }
     public void addTraderLocation(Location loc, String traderType) { traderLocations.add(new TraderLocation(loc, traderType)); }
+    
+    public boolean removeNearestSpawn(Location location, double radius) {
+        Location nearest = null;
+        double minDistance = Double.MAX_VALUE;
+        
+        for (Location spawn : playerSpawns) {
+            double distance = spawn.distance(location);
+            if (distance <= radius && distance < minDistance) {
+                nearest = spawn;
+                minDistance = distance;
+            }
+        }
+        
+        if (nearest != null) {
+            playerSpawns.remove(nearest);
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean removeNearestTrader(Location location, double radius) {
+        TraderLocation nearest = null;
+        double minDistance = Double.MAX_VALUE;
+        
+        for (TraderLocation trader : traderLocations) {
+            double distance = trader.getLocation().distance(location);
+            if (distance <= radius && distance < minDistance) {
+                nearest = trader;
+                minDistance = distance;
+            }
+        }
+        
+        if (nearest != null) {
+            traderLocations.remove(nearest);
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean removeNearestChest(Location location, double radius) {
+        ChestLocation nearest = null;
+        double minDistance = Double.MAX_VALUE;
+        
+        for (ChestLocation chest : chestLocations) {
+            double distance = chest.getLocation().distance(location);
+            if (distance <= radius && distance < minDistance) {
+                nearest = chest;
+                minDistance = distance;
+            }
+        }
+        
+        if (nearest != null) {
+            chestLocations.remove(nearest);
+            return true;
+        }
+        return false;
+    }
     
     public void addSpawnedTrader(Villager trader) {
         spawnedTraders.add(trader);
@@ -161,6 +250,14 @@ public class Arena
     public void setMatchDuration(int duration) { matchDuration = duration; }
     
     public int getChestRefillInterval() { return chestRefillInterval; }
+
+    public String getChestCategory(Location location) {
+        return chestLocations.stream()
+            .filter(chest -> chest.getLocation().equals(location))
+            .findFirst()
+            .map(ChestLocation::getLootCategory)
+            .orElse("COMMON");
+    }
     public void setChestRefillInterval(int interval) { chestRefillInterval = interval; }
     
     public void startChestRefillTimer(ArenaManager arenaManager) {

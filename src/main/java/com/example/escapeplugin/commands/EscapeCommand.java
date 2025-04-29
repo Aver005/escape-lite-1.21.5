@@ -6,7 +6,9 @@ import com.example.escapeplugin.arena.ArenaManager;
 import com.example.escapeplugin.arena.ArenaPlayer;
 import com.example.escapeplugin.arena.SetupTools;
 import com.example.escapeplugin.gui.QuestGUI;
+import com.example.escapeplugin.loot.LootManager;
 import com.example.escapeplugin.quests.QuestManager;
+import com.example.escapeplugin.traders.TraderManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,11 +20,15 @@ public class EscapeCommand implements CommandExecutor
 {
     private final ArenaManager arenaManager;
     private final QuestManager questManager;
+    private final LootManager lootManager;
+    private final TraderManager traderManager;
 
     public EscapeCommand()
     {
         this.arenaManager = EscapePlugin.getInstance().getArenaManager();
         this.questManager = EscapePlugin.getInstance().getQuestManager();
+        this.lootManager = EscapePlugin.getInstance().getLootManager();
+        this.traderManager = EscapePlugin.getInstance().getTraderManager();
     }
 
     @Override
@@ -204,6 +210,82 @@ public class EscapeCommand implements CommandExecutor
                 int count = Integer.parseInt(args[2]);
                 arena.setMinPlayersToStart(count);
                 player.sendMessage("§aМинимальное количество игроков для арены §6" + args[1] + "§a установлено!");
+            }
+        ),
+
+        DELETE_SPAWN(
+            "deletespawn",
+            "§6/es deletespawn <арена> §7- Удалить точку спавна",
+            2,
+            (player, args) ->
+            {
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+                SetupTools setupTools = new SetupTools();
+                setupTools.deleteSpawnPoint(arena, player.getLocation());
+                player.sendMessage("§aТочка спавна удалена с арены §6" + args[1] + "§a!");
+            }
+        ),
+
+        DELETE_TRADER(
+            "deletetrader",
+            "§6/es deletetrader <арена> §7- Удалить торговца",
+            2,
+            (player, args) ->
+            {
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+                SetupTools setupTools = new SetupTools();
+                setupTools.deleteTraderPoint(arena, player.getLocation());
+                player.sendMessage("§aТорговец удален с арены §6" + args[1] + "§a!");
+            }
+        ),
+
+        DELETE_CHEST(
+            "deletechest",
+            "§6/es deletechest <арена> §7- Удалить сундук",
+            2,
+            (player, args) ->
+            {
+                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+                SetupTools setupTools = new SetupTools();
+                setupTools.deleteChestPoint(arena, player.getLocation());
+                player.sendMessage("§aСундук удален с арены §6" + args[1] + "§a!");
+            }
+        ),
+
+        RELOAD(
+            "reload",
+            "§6/es reload §7- Перезагрузить конфигурации торговцев",
+            1,
+            (player, args) ->
+            {
+                if (!player.hasPermission("escape.reload"))
+                {
+                    player.sendMessage("§cУ вас нет прав на использование этой команды!");
+                    return;
+                }
+
+                try {
+                    // Reload trader configs
+                    EscapePlugin.getInstance().getTraderManager().loadTraders();
+                    player.sendMessage("§aКонфигурации торговцев успешно перезагружены!");
+                } catch (Exception e) {
+                    player.sendMessage("§cОшибка при перезагрузке конфигураций: " + e.getMessage());
+                }
             }
         );
 

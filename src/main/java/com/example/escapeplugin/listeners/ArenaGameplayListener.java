@@ -15,7 +15,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.ChatColor;
 
-public class BlockBreakListener implements Listener
+public class ArenaGameplayListener implements Listener
 {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) 
@@ -78,30 +78,6 @@ public class BlockBreakListener implements Listener
         }
         
         event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onKill(PlayerDeathEvent event) {
-        Player killer = event.getEntity().getKiller();
-        if (killer != null) {
-            // Эффект молнии
-            killer.getWorld().strikeLightningEffect(killer.getLocation());
-            // Уведомление в чат и титры
-            Bukkit.broadcastMessage("§c" + killer.getName() + " убил " + event.getEntity().getName() + "!");
-            
-            // Титры для убийцы
-            killer.sendTitle(
-                "",
-                ChatColor.RED + "Вы убили " + event.getEntity().getName(),
-                10, 70, 20
-            );
-            
-            event.getEntity().sendTitle(
-                "",
-                ChatColor.RED + "Вас убил " + killer.getName(),
-                10, 70, 20
-            );
-        }
     }
 
     @EventHandler
