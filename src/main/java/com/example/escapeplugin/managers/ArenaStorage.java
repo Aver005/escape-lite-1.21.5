@@ -1,34 +1,28 @@
 package com.example.escapeplugin.managers;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
+
+import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.entities.Arena;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import org.bukkit.Location;
+import com.example.escapeplugin.enums.TraderType;
 
 public class ArenaStorage
 {
     private static HashMap<String, Arena> arenas = new HashMap<>();
-    private static final Gson gson = new GsonBuilder()
-        .registerTypeAdapter(Location.class, new LocationAdapter())
-        .setPrettyPrinting()
-        .create();
-    private static File storageFile;
+    private static File folder;
 
-    static {
-        File dataFolder = EscapePlugin.getInstance().getDataFolder();
-        if (!dataFolder.exists()) {
-            dataFolder.mkdirs();
-        }
-        storageFile = new File(dataFolder, "arenas.json");
+    static 
+    {
+        File folder = new File(EscapePlugin.getInstance().getDataFolder() + "/arenas");
+        if (!folder.exists()) folder.mkdirs();
     }
 
     public static void add(Arena arena) { arenas.put(arena.getID(), arena); }
@@ -45,41 +39,95 @@ public class ArenaStorage
 
     public static void load()
     {
-        try {
-            if (!storageFile.exists()) return;
-            
-            FileReader reader = new FileReader(storageFile);
-            Map<String, String> serializedArenas = gson.fromJson(
-                reader,
-                new TypeToken<Map<String, String>>(){}.getType()
-            );
-            reader.close();
-
-            if (serializedArenas != null) {
-                serializedArenas.forEach((id, json) -> {
-                    Arena arena = gson.fromJson(json, Arena.class);
-                    arenas.put(id, arena);
-                });
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files == null) return;
+        
+        for (File file : files)
+        {
+            try
+            {
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                String id = file.getName().replace(".yml", "");
+                
+                Arena arena = new Arena(id);
+                arena.setName(config.getString("name", id));
+                arena.setMaxPlayers(config.getInt("maxPlayers", 16));
+                arena.setMinPlayers(config.getInt("minPlayers", 2));
+                
+                List<Location> prisonerSpawns = (List<Location>) config.getList("prisonerSpawns");
+                if (prisonerSpawns != null) prisonerSpawns.forEach(arena::addPrisonerSpawn);
+                
+                List<Location> stashSpawns = (List<Location>) config.getList("stashSpawns");
+                if (stashSpawns != null) stashSpawns.forEach(arena::addChestSpawn);
+                
+                ConfigurationSection leverSection = config.getConfigurationSection("leverSpawns");
+                if (leverSection != null) 
+                {
+                    for (String key : leverSection.getKeys(false)) 
+                    {
+                        Location loc = (Location) leverSection.get(key);
+                        arena.addLeverSpawn(key, loc);
+                    }
+                }
+                
+                ConfigurationSection traderSection = config.getConfigurationSection("traderSpawns");
+                if (traderSection != null) 
+                {
+                    for (String typeName : traderSection.getKeys(false)) 
+                    {
+                        TraderType type = TraderType.valueOf(typeName);
+                        List<Location> spawns = (List<Location>) traderSection.getList(typeName);
+                        if (spawns != null) 
+                        {
+                            spawns.forEach(loc -> 
+                            {
+                                if (!arena.getTraderSpawns().containsKey(type)) 
+                                    arena.getTraderSpawns().put(type, new ArrayList<>());
+                                
+                                arena.getTraderSpawns().get(type).add(loc);
+                            });
+                        }
+                    }
+                }
+                
+                arenas.put(id, arena);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
     public static void save()
     {
-        try {
-            Map<String, String> serializedArenas = new HashMap<>();
-            arenas.forEach((id, arena) -> {
-                String json = gson.toJson(arena);
-                serializedArenas.put(id, json);
-            });
-
-            FileWriter writer = new FileWriter(storageFile);
-            gson.toJson(serializedArenas, writer);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (Arena arena : arenas.values())
+        {
+            try
+            {
+                YamlConfiguration config = new YamlConfiguration();
+                
+                config.set("name", arena.getName());
+                config.set("maxPlayers", arena.getMaxPlayers());
+                config.set("minPlayers", arena.getMinPlayers());
+                config.set("prisonerSpawns", arena.getPrisonerSpawns());
+                config.set("stashSpawns", arena.getStashSpawns());
+                
+                ConfigurationSection leverSection = config.createSection("leverSpawns");
+                arena.getLeverSpawns().forEach(leverSection::set);
+                
+                ConfigurationSection traderSection = config.createSection("traderSpawns");
+                arena.getTraderSpawns().forEach((type, spawns) -> {
+                    traderSection.set(type.name(), spawns);
+                });
+                
+                File file = new File(folder, arena.getID() + ".yml");
+                config.save(file);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 }

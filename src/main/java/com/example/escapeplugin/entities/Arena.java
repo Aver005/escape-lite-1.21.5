@@ -13,8 +13,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.Color;
 
+import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.enums.ArenaStatus;
 import com.example.escapeplugin.enums.TraderType;
+import com.example.escapeplugin.managers.ArenaRunnable;
 
 public class Arena 
 {
@@ -26,13 +28,14 @@ public class Arena
     private int minPlayers = 2;
 
     private ArrayList<Location> prisonerSpawns;
-    private HashMap<TraderType, List<Location>> traderSpawns;
     private ArrayList<Location> stashSpawns;
-    private ArrayList<LeverLocation> leverSpawns;
+    private HashMap<TraderType, ArrayList<Location>> traderSpawns;
+    private HashMap<String, Location> leverSpawns;
 
 
     /* IN GAME STATE */
-    private ArenaStatus status = ArenaStatus.DISABLED;
+    private ArenaRunnable runnable;
+    private ArenaStatus status;
 
     private ArrayList<Prisoner> prisoners;
     private ArrayList<Location> freePrisonerSpawns;
@@ -46,12 +49,14 @@ public class Arena
     {
         this.ID = ID.toUpperCase().strip();
         this.name = ID;
+        this.runnable = new ArenaRunnable(this);
+        this.status = ArenaStatus.DISABLED;
 
         this.prisonerSpawns = new ArrayList<>();
         this.freePrisonerSpawns = new ArrayList<>();
-        this.traderSpawns = new HashMap<>();
         this.stashSpawns = new ArrayList<>();
-        this.leverSpawns = new ArrayList<>();
+        this.traderSpawns = new HashMap<>();
+        this.leverSpawns = new HashMap<>();
 
 
         this.prisoners = new ArrayList<>();
@@ -68,9 +73,7 @@ public class Arena
         if (maxPlayers <= prisoners.size()) return;
 
         if (freePrisonerSpawns.size() == 0 && prisoners.size() == 0)
-        {
             freePrisonerSpawns = (ArrayList<Location>) prisonerSpawns.clone();
-        }
 
         Location freeSpawn = freePrisonerSpawns.get(0);
         prisoner.setArena(this, freeSpawn);
@@ -78,10 +81,8 @@ public class Arena
         freePrisonerSpawns.remove(0);
         setupPrisoner(prisoner);
 
-        if (prisoners.size() == minPlayers)
-        {
-
-        }
+        if (prisoners.size() != minPlayers) return;
+        runnable.runTaskTimer(EscapePlugin.getInstance(), 20L, 20L);
     }
 
     public void leave(Prisoner prisoner)
@@ -174,6 +175,53 @@ public class Arena
         }
     }
 
+    public boolean addPrisonerSpawn(Location loc)
+    {
+        if (prisonerSpawns.contains(loc)) return false;
+        prisonerSpawns.add(loc);
+        return true;
+    }
+
+    public boolean removePrisonerSpawn(Location loc)
+    {
+        if (!prisonerSpawns.contains(loc)) return false;
+        prisonerSpawns.remove(loc);
+        return true;
+    }
+
+    public boolean addChestSpawn(Location loc)
+    {
+        if (stashSpawns.contains(loc)) return false;
+        stashSpawns.add(loc);
+        return true;
+    }
+
+    public boolean removeChestSpawn(Location loc)
+    {
+        if (!stashSpawns.contains(loc)) return false;
+        stashSpawns.remove(loc);
+        return true;
+    }
+
+    public boolean addLeverSpawn(String name, Location loc)
+    {
+        if (leverSpawns.containsKey(name))
+        {
+            Location prevLoc = leverSpawns.get(name);
+            if (prevLoc.equals(loc)) return false;
+        }
+
+        leverSpawns.put(name, loc);
+        return true;
+    }
+
+    public boolean removeLeverSpawn(String name)
+    {
+        if (!leverSpawns.containsKey(name)) return false;
+        leverSpawns.remove(name);
+        return true;
+    }
+
     public boolean isPlaying() { return status.equals(ArenaStatus.PLAYING); }
     public boolean isWaiting() { return status.equals(ArenaStatus.WAITING); }
     public void setStatus(ArenaStatus status) { this.status = status; }
@@ -182,8 +230,13 @@ public class Arena
     public String getName() { return name; }
     public void setName(String newName) { this.name = newName; }
     
+    public int getMaxPlayers() { return maxPlayers; }
+    public void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
+    public int getMinPlayers() { return minPlayers; }
+    public void setMinPlayers(int minPlayers) { this.minPlayers = minPlayers; }
+    
     public List<Location> getPrisonerSpawns() { return prisonerSpawns; }
     public List<Location> getStashSpawns() { return stashSpawns; }
-    public List<LeverLocation> getLeverSpawns() { return leverSpawns; }
-    public HashMap<TraderType, List<Location>> getTraderSpawns() { return traderSpawns; }
+    public HashMap<String, Location> getLeverSpawns() { return leverSpawns; }
+    public HashMap<TraderType, ArrayList<Location>> getTraderSpawns() { return traderSpawns; }
 }

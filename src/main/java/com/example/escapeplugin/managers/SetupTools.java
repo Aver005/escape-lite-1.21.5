@@ -12,7 +12,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import com.example.escapeplugin.entities.LeverLocation;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -20,6 +19,7 @@ import com.example.escapeplugin.entities.Arena;
 import com.example.escapeplugin.gui.TraderSelectionGUI;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.List;
 
@@ -95,18 +95,43 @@ public class SetupTools implements Listener {
         Material type = item.getType();
         Location loc = e.getBlockPlaced().getLocation();
         
-        if (type == Material.BEACON) {
-            arena.getPrisonerSpawns().add(loc);
-            p.sendMessage("§aДобавлена точка спавна заключенных");
+        if (type == Material.BEACON) 
+        {
+            if (arena.addPrisonerSpawn(loc))
+            {
+                e.setCancelled(true);
+                p.sendMessage("§aДобавлена точка спавна заключенных");
+                return;
+            }
+
+            if (arena.removePrisonerSpawn(loc))
+            {
+                e.setCancelled(true);
+                p.sendMessage("§eТочка спавна убрана.");
+                return;
+            }
         }
-        else if (type == Material.CHEST) {
-            arena.getStashSpawns().add(loc);
-            p.sendMessage("§aДобавлена точка спавна стешей");
+        else if (type == Material.CHEST) 
+        {
+            if (arena.addChestSpawn(loc))
+            {
+                e.setCancelled(true);
+                p.sendMessage("§aСундук добавлен");
+                return;
+            }
+
+            if (arena.removeChestSpawn(loc))
+            {
+                e.setCancelled(true);
+                p.sendMessage("§eСундук убран");
+                return;
+            }
         }
-        else if (type == Material.LEVER) {
+        else if (type == Material.LEVER) 
+        {
             pendingLeverNames.put(p, loc);
             p.sendMessage("§eВведите название для этой локации в чат:");
-            p.sendMessage("§7(Используйте /cancel чтобы отменить)");
+            p.sendMessage("§7(Используйте cancel чтобы отменить)");
         }
 
         e.setCancelled(true);
@@ -146,7 +171,8 @@ public class SetupTools implements Listener {
         if (!pendingLeverNames.containsKey(p)) return;
         
         Location loc = pendingLeverNames.get(p);
-        String name = e.message().examinableName();
+        PlainTextComponentSerializer plainSerializer = PlainTextComponentSerializer.plainText();
+        String name = plainSerializer.serialize(e.message());
         
         // Check for cancel command
         if (name.equalsIgnoreCase("cancel")) 
@@ -168,11 +194,20 @@ public class SetupTools implements Listener {
         Arena arena = ArenaStorage.get(arenaId);
         if (arena == null) return;
         
-        // Add lever location with name
-        arena.getLeverSpawns().add(new LeverLocation(loc, name));
-        p.sendMessage("§aДобавлена локация '" + name + "'");
+        if (arena.addLeverSpawn(name, loc))
+        {
+            p.sendMessage("§aДобавлена локация '" + name + "'");
+            pendingLeverNames.remove(p);
+            e.setCancelled(true);
+            return;
+        }
         
-        pendingLeverNames.remove(p);
-        e.setCancelled(true);
+        if (arena.removeLeverSpawn(name))
+        {
+            p.sendMessage("§eЛокация удалена '" + name + "'");
+            pendingLeverNames.remove(p);
+            e.setCancelled(true);
+            return;
+        }
     }
 }
