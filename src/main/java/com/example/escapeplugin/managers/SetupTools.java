@@ -159,8 +159,8 @@ public class SetupTools implements Listener {
         if (arena == null) return;
         
         // Open trader type selection GUI
-        Location loc = e.getClickedBlock().getLocation().add(0, 1, 0);
-        TraderSelectionGUI.open(e.getPlayer(), loc);
+        Location loc = e.getClickedBlock().getLocation();
+        TraderSelectionGUI.open(e.getPlayer(), loc.clone().add(0, 1, 0));
         e.setCancelled(true);
     }
 

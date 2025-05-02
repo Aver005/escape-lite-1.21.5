@@ -179,6 +179,9 @@ public class Arena
     public boolean addPrisonerSpawn(Location loc)
     {
         if (prisonerSpawns.contains(loc)) return false;
+
+        loc.getBlock().setType(Material.BLACK_STAINED_GLASS);
+        loc.clone().add(0, 1, 0).getBlock().setType(Material.BLACK_STAINED_GLASS);
         prisonerSpawns.add(loc);
         return true;
     }
@@ -186,6 +189,9 @@ public class Arena
     public boolean removePrisonerSpawn(Location loc)
     {
         if (!prisonerSpawns.contains(loc)) return false;
+
+        loc.getBlock().setType(Material.AIR);
+        loc.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
         prisonerSpawns.remove(loc);
         return true;
     }
@@ -193,6 +199,9 @@ public class Arena
     public boolean addChestSpawn(Location loc)
     {
         if (stashSpawns.contains(loc)) return false;
+        
+        loc.getBlock().setType(Material.ORANGE_STAINED_GLASS);
+        loc.clone().add(0, 1, 0).getBlock().setType(Material.ORANGE_STAINED_GLASS);
         stashSpawns.add(loc);
         return true;
     }
@@ -200,6 +209,9 @@ public class Arena
     public boolean removeChestSpawn(Location loc)
     {
         if (!stashSpawns.contains(loc)) return false;
+
+        loc.getBlock().setType(Material.AIR);
+        loc.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
         stashSpawns.remove(loc);
         return true;
     }
@@ -212,6 +224,8 @@ public class Arena
             if (prevLoc.equals(loc)) return false;
         }
 
+        loc.getBlock().setType(Material.BROWN_STAINED_GLASS);
+        loc.clone().add(0, 1, 0).getBlock().setType(Material.BROWN_STAINED_GLASS);
         leverSpawns.put(name, loc);
         return true;
     }
@@ -219,6 +233,9 @@ public class Arena
     public boolean removeLeverSpawn(String name)
     {
         if (!leverSpawns.containsKey(name)) return false;
+        Location prevLoc = leverSpawns.get(name);
+        prevLoc.getBlock().setType(Material.AIR);
+        prevLoc.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
         leverSpawns.remove(name);
         return true;
     }
