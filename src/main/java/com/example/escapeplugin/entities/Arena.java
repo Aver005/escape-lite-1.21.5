@@ -96,6 +96,7 @@ public class Arena
         prisoners.remove(prisoner);
 
         prisoner.restoreState();
+        runnable.removePlayer(prisoner);
     }
 
     public void start()
@@ -239,4 +240,5 @@ public class Arena
     public List<Location> getStashSpawns() { return stashSpawns; }
     public HashMap<String, Location> getLeverSpawns() { return leverSpawns; }
     public HashMap<TraderType, ArrayList<Location>> getTraderSpawns() { return traderSpawns; }
+    public List<Prisoner> getPrisoners() { return prisoners; }
 }
