@@ -2,6 +2,7 @@ package com.example.escapeplugin.commands;
 
 import com.example.escapeplugin.entities.Arena;
 import com.example.escapeplugin.entities.Prisoner;
+import com.example.escapeplugin.enums.ArenaStatus;
 import com.example.escapeplugin.managers.ArenaStorage;
 import com.example.escapeplugin.managers.PrisonerStorage;
 import com.example.escapeplugin.managers.SetupTools;
@@ -128,7 +129,7 @@ public class EscapeCommand implements CommandExecutor
         LEAVE(
             "leave",
             "§6/es leave §7- Выйти с арены",
-            1,
+            2,
             (player, args) ->
             {
                 String name = args[1].toUpperCase().strip();
@@ -142,6 +143,25 @@ public class EscapeCommand implements CommandExecutor
 
                 Prisoner prisoner = PrisonerStorage.get(player);
                 arena.leave(prisoner);
+            }
+        ),
+        
+        ENABLE(
+            "enable",
+            "§6/es enabel <Имя арены> §7- Выйти с арены",
+            2,
+            (player, args) ->
+            {
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+                
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+
+                arena.setStatus(ArenaStatus.WAITING);
             }
         );
 

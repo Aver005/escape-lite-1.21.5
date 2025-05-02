@@ -25,20 +25,20 @@ public class Arena
     private int maxPlayers = 16;
     private int minPlayers = 2;
 
-    private List<Location> prisonerSpawns;
+    private ArrayList<Location> prisonerSpawns;
     private HashMap<TraderType, List<Location>> traderSpawns;
-    private List<Location> stashSpawns;
-    private List<LeverLocation> leverSpawns;
+    private ArrayList<Location> stashSpawns;
+    private ArrayList<LeverLocation> leverSpawns;
 
 
     /* IN GAME STATE */
     private ArenaStatus status = ArenaStatus.DISABLED;
 
-    private List<Prisoner> prisoners;
-    private List<Location> freePrisonerSpawns;
-    private List<Trader> traders;
-    private List<Stash> stashs;
-    private List<ItemStack> droppedItems;
+    private ArrayList<Prisoner> prisoners;
+    private ArrayList<Location> freePrisonerSpawns;
+    private ArrayList<Trader> traders;
+    private ArrayList<Stash> stashs;
+    private ArrayList<ItemStack> droppedItems;
     private HashMap<Location, Material> restoreBlocks;
 
 
@@ -48,9 +48,17 @@ public class Arena
         this.name = ID;
 
         this.prisonerSpawns = new ArrayList<>();
+        this.freePrisonerSpawns = new ArrayList<>();
         this.traderSpawns = new HashMap<>();
         this.stashSpawns = new ArrayList<>();
-        this.leverSpawns = new ArrayList<LeverLocation>();
+        this.leverSpawns = new ArrayList<>();
+
+
+        this.prisoners = new ArrayList<>();
+        this.traders = new ArrayList<>();
+        this.stashs = new ArrayList<>();
+        this.droppedItems = new ArrayList<>();
+        this.restoreBlocks = new HashMap<>();
     }
 
     public void join(Prisoner prisoner)
@@ -58,7 +66,11 @@ public class Arena
         if (prisoner.isPlaying()) return;
         if (prisoners.contains(prisoner)) return;
         if (maxPlayers <= prisoners.size()) return;
-        if (freePrisonerSpawns.size() == 0) return;
+
+        if (freePrisonerSpawns.size() == 0 && prisoners.size() == 0)
+        {
+            freePrisonerSpawns = (ArrayList<Location>) prisonerSpawns.clone();
+        }
 
         Location freeSpawn = freePrisonerSpawns.get(0);
         prisoner.setArena(this, freeSpawn);
@@ -74,8 +86,7 @@ public class Arena
 
     public void leave(Prisoner prisoner)
     {
-        if (!prisoner.isPlaying()) return;
-        if (prisoner.getArena() != this) return;
+        if (prisoner.getArena().getID() != getID()) return;
         if (!prisoners.contains(prisoner)) return;
 
         Location freeSpawn = prisoner.getSpawn();
@@ -165,6 +176,7 @@ public class Arena
 
     public boolean isPlaying() { return status.equals(ArenaStatus.PLAYING); }
     public boolean isWaiting() { return status.equals(ArenaStatus.WAITING); }
+    public void setStatus(ArenaStatus status) { this.status = status; }
 
     public String getID() { return ID; }
     public String getName() { return name; }
