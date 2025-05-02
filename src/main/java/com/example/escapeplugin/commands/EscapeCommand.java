@@ -1,14 +1,11 @@
 package com.example.escapeplugin.commands;
 
-import com.example.escapeplugin.EscapePlugin;
-import com.example.escapeplugin.arena.Arena;
-import com.example.escapeplugin.arena.ArenaManager;
-import com.example.escapeplugin.arena.ArenaPlayer;
-import com.example.escapeplugin.arena.SetupTools;
-import com.example.escapeplugin.gui.QuestGUI;
-import com.example.escapeplugin.loot.LootManager;
-import com.example.escapeplugin.quests.QuestManager;
-import com.example.escapeplugin.traders.TraderManager;
+import com.example.escapeplugin.entities.Arena;
+import com.example.escapeplugin.entities.Prisoner;
+import com.example.escapeplugin.managers.ArenaStorage;
+import com.example.escapeplugin.managers.PrisonerStorage;
+import com.example.escapeplugin.managers.SetupTools;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,19 +15,6 @@ import java.util.Arrays;
 
 public class EscapeCommand implements CommandExecutor
 {
-    private final ArenaManager arenaManager;
-    private final QuestManager questManager;
-    private final LootManager lootManager;
-    private final TraderManager traderManager;
-
-    public EscapeCommand()
-    {
-        this.arenaManager = EscapePlugin.getInstance().getArenaManager();
-        this.questManager = EscapePlugin.getInstance().getQuestManager();
-        this.lootManager = EscapePlugin.getInstance().getLootManager();
-        this.traderManager = EscapePlugin.getInstance().getTraderManager();
-    }
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
@@ -75,15 +59,16 @@ public class EscapeCommand implements CommandExecutor
             2,
             (player, args) ->
             {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+
                 if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
                     return;
                 }
-                
-                SetupTools setupTools = new SetupTools();
-                setupTools.giveSetupTools(player);
+
+                SetupTools.giveSetupTools(player, arena);
                 player.sendMessage("§aИспользуйте полученные предметы для настройки арены!");
             }
         ),
@@ -94,8 +79,9 @@ public class EscapeCommand implements CommandExecutor
             2,
             (player, args) ->
             {
-                EscapePlugin.getInstance().getArenaManager().createArena(args[1]);
-                player.sendMessage("§aАрена §6" + args[1] + "§a создана!");
+                String name = args[1].toUpperCase().strip();
+                ArenaStorage.create(name);
+                player.sendMessage("§aАрена §6" + name + "§a создана!");
             }
         ),
 
@@ -105,8 +91,17 @@ public class EscapeCommand implements CommandExecutor
             2,
             (player, args) ->
             {
-                EscapePlugin.getInstance().getArenaManager().removeArena(args[1]);
-                player.sendMessage("§aАрена §6" + args[1] + "§a удалена!");
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+
+                ArenaStorage.remove(arena);
+                player.sendMessage("§aАрена §6" + name + "§a удалена!");
             }
         ),
 
@@ -116,14 +111,17 @@ public class EscapeCommand implements CommandExecutor
             2,
             (player, args) ->
             {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+
                 if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
                     return;
                 }
 
-                arena.join(player);
+                Prisoner prisoner = PrisonerStorage.get(player);
+                arena.join(prisoner);
             }
         ),
 
@@ -133,159 +131,17 @@ public class EscapeCommand implements CommandExecutor
             1,
             (player, args) ->
             {
-                ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
-                if (arenaPlayer == null) return;
-
-                Arena arena = arenaPlayer.getArena();
-                if (arena == null)
-                {
-                    player.sendMessage("§cВы не в игре.");
-                    return;
-                }
-
-                arena.leave(player);
-            }
-        ),
-
-        ADD_CHEST(
-            "addchest",
-            "§6/es addchest <арена> §7- Добавить сундук",
-            2,
-            (player, args) ->
-            {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+                
                 if (arena == null)
                 {
                     player.sendMessage("§cАрена не найдена!");
                     return;
                 }
-                arena.addChestLocation(player.getLocation());
-                player.sendMessage("§aСундук добавлен на арену §6" + args[1] + "§a!");
-            }
-        ),
 
-        ADD_TRADER(
-            "addtrader",
-            "§6/es addtrader <арена> <тип> §7- Добавить торговца",
-            3,
-            (player, args) ->
-            {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
-                if (arena == null)
-                {
-                    player.sendMessage("§cАрена не найдена!");
-                    return;
-                }
-                arena.addTraderLocation(player.getLocation());
-                player.sendMessage("§aТорговец добавлен на арену §6" + args[1] + "§a!");
-            }
-        ),
-
-        QUESTS(
-            "quests",
-            "§6/es quests §7- Проверить квесты",
-            1,
-            (player, args) -> EscapePlugin.getInstance().getQuestManager().checkQuests(player)
-        ),
-
-        MENU(
-            "menu",
-            "§6/es menu §7- Открыть меню квестов",
-            1,
-            (player, args) -> QuestGUI.open(player, EscapePlugin.getInstance().getQuestManager())
-        ),
-
-        MIN_PLAYERS(
-            "setmin",
-            "§6/es setmin <арена> <количество> §7- Открыть меню квестов",
-            3,
-            (player, args) ->
-            {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
-                if (arena == null)
-                {
-                    player.sendMessage("§cАрена не найдена!");
-                    return;
-                }
-                int count = Integer.parseInt(args[2]);
-                arena.setMinPlayersToStart(count);
-                player.sendMessage("§aМинимальное количество игроков для арены §6" + args[1] + "§a установлено!");
-            }
-        ),
-
-        DELETE_SPAWN(
-            "deletespawn",
-            "§6/es deletespawn <арена> §7- Удалить точку спавна",
-            2,
-            (player, args) ->
-            {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
-                if (arena == null)
-                {
-                    player.sendMessage("§cАрена не найдена!");
-                    return;
-                }
-                SetupTools setupTools = new SetupTools();
-                setupTools.deleteSpawnPoint(arena, player.getLocation());
-                player.sendMessage("§aТочка спавна удалена с арены §6" + args[1] + "§a!");
-            }
-        ),
-
-        DELETE_TRADER(
-            "deletetrader",
-            "§6/es deletetrader <арена> §7- Удалить торговца",
-            2,
-            (player, args) ->
-            {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
-                if (arena == null)
-                {
-                    player.sendMessage("§cАрена не найдена!");
-                    return;
-                }
-                SetupTools setupTools = new SetupTools();
-                setupTools.deleteTraderPoint(arena, player.getLocation());
-                player.sendMessage("§aТорговец удален с арены §6" + args[1] + "§a!");
-            }
-        ),
-
-        DELETE_CHEST(
-            "deletechest",
-            "§6/es deletechest <арена> §7- Удалить сундук",
-            2,
-            (player, args) ->
-            {
-                Arena arena = EscapePlugin.getInstance().getArenaManager().getArena(args[1]);
-                if (arena == null)
-                {
-                    player.sendMessage("§cАрена не найдена!");
-                    return;
-                }
-                SetupTools setupTools = new SetupTools();
-                setupTools.deleteChestPoint(arena, player.getLocation());
-                player.sendMessage("§aСундук удален с арены §6" + args[1] + "§a!");
-            }
-        ),
-
-        RELOAD(
-            "reload",
-            "§6/es reload §7- Перезагрузить конфигурации торговцев",
-            1,
-            (player, args) ->
-            {
-                if (!player.hasPermission("escape.reload"))
-                {
-                    player.sendMessage("§cУ вас нет прав на использование этой команды!");
-                    return;
-                }
-
-                try {
-                    // Reload trader configs
-                    EscapePlugin.getInstance().getTraderManager().loadTraders();
-                    player.sendMessage("§aКонфигурации торговцев успешно перезагружены!");
-                } catch (Exception e) {
-                    player.sendMessage("§cОшибка при перезагрузке конфигураций: " + e.getMessage());
-                }
+                Prisoner prisoner = PrisonerStorage.get(player);
+                arena.leave(prisoner);
             }
         );
 
