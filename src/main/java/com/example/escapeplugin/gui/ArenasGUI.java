@@ -1,6 +1,8 @@
 package com.example.escapeplugin.gui;
 
-public class ArenasGUI 
+import org.bukkit.event.Listener;
+
+public class ArenasGUI implements Listener
 {
     
 }

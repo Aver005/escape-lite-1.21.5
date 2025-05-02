@@ -1,5 +1,8 @@
 package com.example.escapeplugin.managers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -8,23 +11,26 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import com.example.escapeplugin.entities.LeverLocation;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.example.escapeplugin.entities.Arena;
-import com.example.escapeplugin.enums.TraderType;
+import com.example.escapeplugin.gui.TraderSelectionGUI;
 
-import java.util.ArrayList;
+import io.papermc.paper.event.player.AsyncChatEvent;
+
 import java.util.List;
 
-public class SetupTools implements Listener
-{
+public class SetupTools implements Listener {
+    private final Map<Player, Location> pendingLeverNames = new HashMap<>();
     public static void giveSetupTools(Player player, Arena arena)
     {
         player.getInventory().addItem(
             createMarker(
                 Material.BEACON, 
-                "Маяк", 
+                "Отметка спавна игроков", 
                 "Отметка игроков", 
                 arena
             )
@@ -32,7 +38,7 @@ public class SetupTools implements Listener
         player.getInventory().addItem(
             createMarker(
                 Material.CHEST, 
-                "Сундук", 
+                "Отметка стешей", 
                 "Отметка стешей", 
                 arena
             )
@@ -40,7 +46,7 @@ public class SetupTools implements Listener
         player.getInventory().addItem(
             createMarker(
                 Material.VILLAGER_SPAWN_EGG, 
-                "Яйцо призыва жителей", 
+                "Отметка торговцев", 
                 "Отметка торговцев", 
                 arena
             )
@@ -48,7 +54,7 @@ public class SetupTools implements Listener
         player.getInventory().addItem(
             createMarker(
                 Material.LEVER, 
-                "Рычаг", 
+                "Отметка локаций", 
                 "Отметка локаций", 
                 arena
             )
@@ -98,8 +104,9 @@ public class SetupTools implements Listener
             p.sendMessage("§aДобавлена точка спавна стешей");
         }
         else if (type == Material.LEVER) {
-            arena.getLeverSpawns().add(loc);
-            p.sendMessage("§aДобавлена точка спавна рычагов");
+            pendingLeverNames.put(p, loc);
+            p.sendMessage("§eВведите название для этой локации в чат:");
+            p.sendMessage("§7(Используйте /cancel чтобы отменить)");
         }
 
         e.setCancelled(true);
@@ -126,16 +133,46 @@ public class SetupTools implements Listener
         Arena arena = ArenaStorage.get(arenaId);
         if (arena == null) return;
         
-        // Add trader spawn point
+        // Open trader type selection GUI
         Location loc = e.getClickedBlock().getLocation().add(0, 1, 0);
-        TraderType type = TraderType.COOK; // Default type
+        TraderSelectionGUI.open(e.getPlayer(), loc);
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerChat(AsyncChatEvent e) 
+    {
+        Player p = e.getPlayer();
+        if (!pendingLeverNames.containsKey(p)) return;
         
-        if (!arena.getTraderSpawns().containsKey(type)) {
-            arena.getTraderSpawns().put(type, new ArrayList<>());
+        Location loc = pendingLeverNames.get(p);
+        String name = e.message().examinableName();
+        
+        // Check for cancel command
+        if (name.equalsIgnoreCase("cancel")) 
+        {
+            p.sendMessage("§cДобавление локации отменено");
+            pendingLeverNames.remove(p);
+            e.setCancelled(true);
+            return;
         }
-        arena.getTraderSpawns().get(type).add(loc);
         
-        e.getPlayer().sendMessage("§aДобавлена точка спавна торговца");
+        // Get arena from storage (similar to onBlockPlaced)
+        ItemStack item = p.getInventory().getItemInHand();
+        if (!item.hasItemMeta() || !item.getItemMeta().hasLore()) return;
+        
+        List<String> lore = item.getItemMeta().getLore();
+        if (lore.size() < 2) return;
+        
+        String arenaId = lore.get(1).replace("ID арены: ", "");
+        Arena arena = ArenaStorage.get(arenaId);
+        if (arena == null) return;
+        
+        // Add lever location with name
+        arena.getLeverSpawns().add(new LeverLocation(loc, name));
+        p.sendMessage("§aДобавлена локация '" + name + "'");
+        
+        pendingLeverNames.remove(p);
         e.setCancelled(true);
     }
 }

@@ -20,4 +20,14 @@ public class ArenaStorage
         add(arena);
         return arena;
     }
+
+    public static void load()
+    {
+        
+    }
+
+    public static void save()
+    {
+        
+    }
 }

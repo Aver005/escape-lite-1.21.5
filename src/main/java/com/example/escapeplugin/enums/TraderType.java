@@ -1,20 +1,28 @@
 package com.example.escapeplugin.enums;
 
-public enum TraderType 
-{
-    COOK(""), 
-    GUNMAKER(""),
-    TOOLMAKER(""),
-    MAGICIAN(""),
-    TRAPPER(""),
-    MYSTERIOUS("");
+import org.bukkit.Material;
 
-    private String name;
+public enum TraderType {
+    COOK("Повар", Material.BREAD),
+    GUNMAKER("Оружейник", Material.IRON_SWORD),
+    TOOLMAKER("Инструментальщик", Material.IRON_PICKAXE),
+    MAGICIAN("Маг", Material.ENCHANTED_BOOK),
+    TRAPPER("Капканщик", Material.TRIPWIRE_HOOK),
+    MYSTERIOUS("Таинственный", Material.ENDER_EYE);
 
-    TraderType(String name)
-    {
-        this.name = name;
-    };
+    private final String displayName;
+    private final Material icon;
+
+    TraderType(String displayName, Material icon) {
+        this.displayName = displayName;
+        this.icon = icon;
+    }
     
-    public String getName() { return name; }
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    public Material getIcon() {
+        return icon;
+    }
 }

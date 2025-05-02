@@ -28,7 +28,7 @@ public class Arena
     private List<Location> prisonerSpawns;
     private HashMap<TraderType, List<Location>> traderSpawns;
     private List<Location> stashSpawns;
-    private List<Location> leverSpawns;
+    private List<LeverLocation> leverSpawns;
 
 
     /* IN GAME STATE */
@@ -50,7 +50,7 @@ public class Arena
         this.prisonerSpawns = new ArrayList<>();
         this.traderSpawns = new HashMap<>();
         this.stashSpawns = new ArrayList<>();
-        this.leverSpawns = new ArrayList<>();
+        this.leverSpawns = new ArrayList<LeverLocation>();
     }
 
     public void join(Prisoner prisoner)
@@ -172,6 +172,6 @@ public class Arena
     
     public List<Location> getPrisonerSpawns() { return prisonerSpawns; }
     public List<Location> getStashSpawns() { return stashSpawns; }
-    public List<Location> getLeverSpawns() { return leverSpawns; }
+    public List<LeverLocation> getLeverSpawns() { return leverSpawns; }
     public HashMap<TraderType, List<Location>> getTraderSpawns() { return traderSpawns; }
 }
