@@ -48,6 +48,9 @@ public class Arena
         this.name = ID;
 
         this.prisonerSpawns = new ArrayList<>();
+        this.traderSpawns = new HashMap<>();
+        this.stashSpawns = new ArrayList<>();
+        this.leverSpawns = new ArrayList<>();
     }
 
     public void join(Prisoner prisoner)
@@ -166,4 +169,9 @@ public class Arena
     public String getID() { return ID; }
     public String getName() { return name; }
     public void setName(String newName) { this.name = newName; }
+    
+    public List<Location> getPrisonerSpawns() { return prisonerSpawns; }
+    public List<Location> getStashSpawns() { return stashSpawns; }
+    public List<Location> getLeverSpawns() { return leverSpawns; }
+    public HashMap<TraderType, List<Location>> getTraderSpawns() { return traderSpawns; }
 }
