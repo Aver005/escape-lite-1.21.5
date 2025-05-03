@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -71,7 +72,6 @@ public class SetupTools implements Listener {
         return item;
     }
 
-
     @EventHandler
     public void onBlockPlaced(BlockPlaceEvent e)
     {
@@ -103,10 +103,63 @@ public class SetupTools implements Listener {
                 p.sendMessage("§aДобавлена точка спавна заключенных");
                 return;
             }
+        }
+        else if (type == Material.CHEST) 
+        {
+            if (arena.addChestSpawn(loc))
+            {
+                e.setCancelled(true);
+                p.sendMessage("§aСундук добавлен");
+                return;
+            }
+        }
+        else if (type == Material.LEVER) 
+        {
+            pendingLeverNames.put(p, loc);
+            p.sendMessage("§eВведите название для этой локации в чат:");
+            p.sendMessage("§7(Используйте cancel чтобы отменить)");
+        }
+
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent e)
+    {
+        Player p = e.getPlayer();
+        ItemStack item = p.getInventory().getItemInMainHand();
+        if (item == null) return;
+        
+        // Check if item has meta and lore
+        if (!item.hasItemMeta() || !item.getItemMeta().hasLore()) return;
+        
+        List<String> lore = item.getItemMeta().getLore();
+        if (lore.size() < 2) return;
+        
+        // Get arena ID from lore
+        String arenaId = lore.get(1).replace("ID арены: ", "");
+        
+        // Get arena from storage
+        Arena arena = ArenaStorage.get(arenaId);
+        if (arena == null) return;
+        
+        // Handle different marker types
+        Material type = item.getType();
+        Location loc = e.getBlock().getLocation();
+
+        if (type != e.getBlock().getType()) return;
+        if (type == Material.BEACON) 
+        {
+            if (arena.addPrisonerSpawn(loc))
+            {
+                e.setCancelled(true);
+                p.sendMessage("§aДобавлена точка спавна заключенных");
+                return;
+            }
 
             if (arena.removePrisonerSpawn(loc))
             {
-                e.setCancelled(true);
+                e.setCancelled(false);
                 p.sendMessage("§eТочка спавна убрана.");
                 return;
             }
@@ -122,7 +175,7 @@ public class SetupTools implements Listener {
 
             if (arena.removeChestSpawn(loc))
             {
-                e.setCancelled(true);
+                e.setCancelled(false);
                 p.sendMessage("§eСундук убран");
                 return;
             }

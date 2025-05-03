@@ -8,6 +8,8 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -17,6 +19,7 @@ import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.enums.ArenaStatus;
 import com.example.escapeplugin.enums.TraderType;
 import com.example.escapeplugin.managers.ArenaRunnable;
+import com.example.escapeplugin.managers.LootManager;
 
 public class Arena 
 {
@@ -32,6 +35,8 @@ public class Arena
     private HashMap<TraderType, ArrayList<Location>> traderSpawns;
     private HashMap<String, Location> leverSpawns;
 
+    private boolean allowForceChestGenerate = true;
+
 
     /* IN GAME STATE */
     private ArenaRunnable runnable;
@@ -41,7 +46,8 @@ public class Arena
     private ArrayList<Location> freePrisonerSpawns;
     private ArrayList<Trader> traders;
     private ArrayList<Stash> stashs;
-    private ArrayList<ItemStack> droppedItems;
+
+    private ArrayList<Item> droppedItems;
     private HashMap<Location, Material> restoreBlocks;
 
 
@@ -103,18 +109,59 @@ public class Arena
     {
         if (!isWaiting()) return;
 
+        cleanup();
         status = ArenaStatus.PLAYING;
         prisoners.forEach(prisoner -> setupPrisoner(prisoner));
+
+        respawnStashes();
+        respawnTraders();
+    }
+
+    public void respawnStashes()
+    {
+        for (Stash stash : stashs) { stash.clear(); }
+        stashs.clear();
+
+        LootManager lootManager = EscapePlugin.getInstance().getLootManager();
+        for (Location spawn : stashSpawns) {
+            stashs.add(new Stash(spawn, lootManager));
+        }
+    }
+
+    public void respawnTraders()
+    {
+        for (Trader trader : traders) { trader.remove(); }
+        traders.clear();
+        
+        for (TraderType type : traderSpawns.keySet()) 
+        {
+            for (Location spawn : traderSpawns.get(type)) 
+            {
+                traders.add(new Trader(spawn, type));
+            }
+        }
     }
 
     public void stop()
     {
-        
+        cleanup();
     }
 
     public void cleanup()
     {
-        
+        for (Location loc : restoreBlocks.keySet()) 
+        {
+            loc.getBlock().setType(restoreBlocks.get(loc));
+        }
+
+        for (Item item : droppedItems) { item.remove(); }
+        for (Trader trader : traders) { trader.remove(); }
+        for (Stash stash : stashs) { stash.clear(); }
+
+        restoreBlocks.clear();
+        droppedItems.clear();
+        traders.clear();
+        stashs.clear();
     }
 
     public void setupPrisoner(Prisoner prisoner)
@@ -166,7 +213,7 @@ public class Arena
             p.setGameMode(GameMode.SURVIVAL);
             // Create golden pickaxe with low durability
             ItemStack pickaxe = new ItemStack(Material.GOLDEN_PICKAXE);
-            pickaxe.setDurability((short)(pickaxe.getType().getMaxDurability() - 2));
+            pickaxe.setDurability((short)(pickaxe.getType().getMaxDurability() - 1));
             pickaxe.getItemMeta().setDisplayName("§6Ломалка");
             p.getInventory().setItemInMainHand(pickaxe);
             p.setHealth(20);
@@ -200,8 +247,7 @@ public class Arena
     {
         if (stashSpawns.contains(loc)) return false;
         
-        loc.getBlock().setType(Material.ORANGE_STAINED_GLASS);
-        loc.clone().add(0, 1, 0).getBlock().setType(Material.ORANGE_STAINED_GLASS);
+        loc.getBlock().setType(Material.CHEST);
         stashSpawns.add(loc);
         return true;
     }
@@ -211,7 +257,6 @@ public class Arena
         if (!stashSpawns.contains(loc)) return false;
 
         loc.getBlock().setType(Material.AIR);
-        loc.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
         stashSpawns.remove(loc);
         return true;
     }
@@ -240,6 +285,16 @@ public class Arena
         return true;
     }
 
+    public void addRestoredBlock(Location loc, Material material)
+    {
+        restoreBlocks.put(loc, material);
+    }
+
+    public void addDroppedItem(Item item)
+    {
+        droppedItems.add(item);
+    }
+
     public boolean isPlaying() { return status.equals(ArenaStatus.PLAYING); }
     public boolean isWaiting() { return status.equals(ArenaStatus.WAITING); }
     public void setStatus(ArenaStatus status) { this.status = status; }
@@ -252,6 +307,8 @@ public class Arena
     public void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
     public int getMinPlayers() { return minPlayers; }
     public void setMinPlayers(int minPlayers) { this.minPlayers = minPlayers; }
+    public boolean getForceChestGenerate() { return this.allowForceChestGenerate; }
+    public void setForceChestGenerate(boolean newValue) { allowForceChestGenerate = newValue; }
     
     public List<Location> getPrisonerSpawns() { return prisonerSpawns; }
     public List<Location> getStashSpawns() { return stashSpawns; }

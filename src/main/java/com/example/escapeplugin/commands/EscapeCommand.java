@@ -148,7 +148,7 @@ public class EscapeCommand implements CommandExecutor
         
         ENABLE(
             "enable",
-            "§6/es enabel <Имя арены> §7- Выйти с арены",
+            "§6/es enable <Имя арены> §7- Включить арену",
             2,
             (player, args) ->
             {
@@ -162,6 +162,65 @@ public class EscapeCommand implements CommandExecutor
                 }
 
                 arena.setStatus(ArenaStatus.WAITING);
+            }
+        ),
+        
+        DISABLE(
+            "disable",
+            "§6/es disable <Имя арены> §7- Выключить арену",
+            2,
+            (player, args) ->
+            {
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+                
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+
+                arena.setStatus(ArenaStatus.DISABLED);
+            }
+        ),
+        
+        SAVE(
+            "save",
+            "§6/es save <Имя арены> §7- Сохранить арену",
+            2,
+            (player, args) ->
+            {
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+                
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+
+                ArenaStorage.saveArena(arena);
+                player.sendMessage("§bАрена сохранена");
+            }
+        ),
+        
+        LOAD(
+            "load",
+            "§6/es load <Имя арены> §7- Загрузить арену",
+            2,
+            (player, args) ->
+            {
+                String name = args[1].toUpperCase().strip();
+                Arena arena = ArenaStorage.get(name);
+                
+                if (arena == null)
+                {
+                    player.sendMessage("§cАрена не найдена!");
+                    return;
+                }
+
+                ArenaStorage.loadArena(arena);
+                player.sendMessage("§bАрена загружена");
             }
         );
 
