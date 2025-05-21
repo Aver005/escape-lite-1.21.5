@@ -29,6 +29,22 @@ public class GameTimer
         );
     }
 
+    private boolean tryEndMatch() {
+        if (timeLeft <= 0) {
+            arena.broadcast("§4Матч завершен!");
+            bossBar.removeAll();
+            arena.cleanupAfterMatch();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isMatchEnding() {
+        return timeLeft <= 0 || arena.getPlayers().isEmpty();
+    }
+
     public void start()
     {
         isRunning = true;
@@ -77,15 +93,11 @@ public class GameTimer
                     arena.broadcast("§cМатч почти подошёл к концу!");
                 }
 
-                if (timeLeft <= 0)
-                {
-                    arena.broadcast("§4Матч завершен!");
-                    bossBar.removeAll();
+                if (tryEndMatch()) {
                     cancel();
-                    arena.cleanupAfterMatch();
                 }
             }
-        }.runTaskTimer(EscapePlugin.getInstance(), 0, 20); // 20 тиков = 1 секунда
+        }.runTaskTimer(EscapePlugin.getInstance(), 0, 20);
     }
 
     public void stop()

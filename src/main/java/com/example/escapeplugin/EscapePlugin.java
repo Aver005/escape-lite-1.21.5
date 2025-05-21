@@ -60,7 +60,7 @@ public class EscapePlugin extends JavaPlugin
         questLoader.registerQuests();
 
         getCommand("es").setExecutor(new EscapeCommand());
-        getCommand("looteditor").setExecutor(new LootEditorCommand());
+        getCommand("looteditor").setExecutor(new LootEditorCommand(lootManager));
         getCommand("refillchests").setExecutor((sender, command, label, args) -> {
             if (!sender.hasPermission("escape.refill")) {
                 sender.sendMessage("§cУ вас нет прав на эту команду!");

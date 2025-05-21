@@ -101,17 +101,15 @@ public class Arena
     
     private void checkMatchEnd() {
         if (gameTimer == null) return;
-        
-        // Count living players (those still in activePlayers)
+
         int livingPlayers = activePlayers.size();
         
-        if (livingPlayers < 2) {
+        if (livingPlayers == 2) {
             broadcast("§cМатч завершен - осталось слишком мало игроков!");
             cleanupAfterMatch();
             gameTimer.stop();
             gameTimer = null;
         } else if (livingPlayers == 1) {
-            // Only one living player remains (others have left/died)
             broadcast("§cМатч завершен - остался только один выживший игрок!");
             cleanupAfterMatch();
             gameTimer.stop();
@@ -236,9 +234,10 @@ public class Arena
         clearTraders();
         clearDroppedItems();
         clearChests();
-        
-        // Очищаем спавн-блоки игроков
+
         for (Player player : activePlayers) {
+            ArenaPlayer.getPlayer(player).leave();
+
             Location blockLoc = playersBlock.get(player);
             if (blockLoc != null && blockLoc.getBlock().getType() == Material.BEDROCK) {
                 blockLoc.getBlock().setType(Material.AIR);

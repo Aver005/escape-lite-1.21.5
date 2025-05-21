@@ -1,6 +1,9 @@
 package com.example.escapeplugin.loot;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
 import java.util.*;
 
 public class LootManager {
@@ -36,5 +39,11 @@ public class LootManager {
     public void removeItemFromCategory(String category, Material material) {
         config.getConfig().set("categories." + category + ".items." + material.name(), null);
         config.saveConfig();
+    }
+
+    public void saveItemFromInventory(Inventory blockInventory, String category) {
+        for (ItemStack itemStack : blockInventory.getContents()) {
+            config.getConfig().set()
+        }
     }
 }

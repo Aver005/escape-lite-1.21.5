@@ -1,6 +1,9 @@
 package com.example.escapeplugin.listeners;
 
 import com.example.escapeplugin.arena.ArenaPlayer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -70,11 +73,12 @@ public class ArenaGameplayListener implements Listener
             player.sendMessage("§aВы установили новый спавн-блок!");
             
             Bukkit.broadcastMessage(ChatColor.GOLD + "Игрок " + player.getName() + " установил спавн-блок!");
-            
-            player.sendTitle(
-                "",
-                ChatColor.GREEN + "Спавн-блок установлен",
-                10, 70, 20
+
+            player.showTitle(
+                    Title.title(
+                            Component.text(""),
+                            Component.text("Спавн-блок установлен")
+                    )
             );
             return;
         }
