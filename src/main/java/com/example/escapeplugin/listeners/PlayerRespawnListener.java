@@ -8,20 +8,24 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-public class PlayerRespawnListener implements Listener {
-    
+public class PlayerRespawnListener implements Listener 
+{    
     @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
+    public void onPlayerRespawn(PlayerRespawnEvent event) 
+    {
         Player player = event.getPlayer();
         ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
         
-        if (arenaPlayer.isPlaying()) {
-            // Respawn at spawn block if available, otherwise at arena spawn
+        if (arenaPlayer.isPlaying()) 
+        {
             Location respawnLocation = arenaPlayer.getSpawn();
-            if (respawnLocation != null) {
+            if (respawnLocation != null) 
+            {
                 event.setRespawnLocation(respawnLocation);
                 player.sendMessage("§aВы возродились у своего спавн-блока!");
-            } else {
+            } 
+            else 
+            {
                 player.setGameMode(GameMode.SPECTATOR);
                 player.sendMessage("§cВаш спавн-блок уничтожен! Вы переведены в режим наблюдателя.");
             }

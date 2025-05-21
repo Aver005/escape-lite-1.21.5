@@ -9,21 +9,19 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import com.example.escapeplugin.arena.ArenaPlayer;
 
-public class PlayerDeathListener implements Listener {
-    
+public class PlayerDeathListener implements Listener 
+{    
     @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event) {
+    public void onPlayerDeath(PlayerDeathEvent event) 
+    {
         Player player = event.getEntity();
         Player killer = player.getKiller();
         
-        // Handle killer effects if applicable
-        if (killer != null) {
-            // Lightning effect
+        if (killer != null) 
+        {
             killer.getWorld().strikeLightningEffect(killer.getLocation());
-            // Chat and title notifications
             Bukkit.broadcastMessage("§c" + killer.getName() + " убил " + player.getName() + "!");
             
-            // Titles for killer and victim
             killer.sendTitle(
                 "",
                 ChatColor.RED + "Вы убили " + player.getName(),
@@ -37,15 +35,14 @@ public class PlayerDeathListener implements Listener {
             );
         }
         
-        // Handle respawn logic
         ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
-        if (arenaPlayer != null && arenaPlayer.isPlaying()) {
-            if (arenaPlayer.getSpawnBlockLocation() == null) {
-                // No spawn block set - move to spectator mode
+        if (arenaPlayer != null && arenaPlayer.isPlaying()) 
+        {
+            if (arenaPlayer.getSpawnBlockLocation() == null) 
+            {
                 player.setGameMode(GameMode.SPECTATOR);
                 player.sendMessage(ChatColor.RED + "Вы переведены в режим наблюдателя, так как не установили спавн-блок!");
             }
-            // Players with spawn blocks will respawn normally
         }
     }
 }

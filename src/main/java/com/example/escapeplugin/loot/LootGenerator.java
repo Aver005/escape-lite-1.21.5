@@ -6,7 +6,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-public class LootGenerator {
+public class LootGenerator 
+{
     private final LootConfiguration config;
 
     public LootGenerator(LootConfiguration config) {

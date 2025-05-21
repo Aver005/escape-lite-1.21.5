@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.ChatColor;
 
@@ -26,7 +25,8 @@ public class ArenaGameplayListener implements Listener
     
         Location blockLoc = event.getBlock().getLocation();
         
-        for (Player otherPlayer : arenaPlayer.getArena().getPlayers()) {
+        for (Player otherPlayer : arenaPlayer.getArena().getPlayers()) 
+        {
             ArenaPlayer otherArenaPlayer = ArenaPlayer.getPlayer(otherPlayer);
             Location otherSpawnBlock = otherArenaPlayer.getSpawnBlockLocation();
             
@@ -36,6 +36,8 @@ public class ArenaGameplayListener implements Listener
                 {
                     arenaPlayer.setSpawnBlockLocation(null);
                     player.sendMessage("§aВы сломали свой спавн-блок!");
+                    event.setDropItems(false);
+                    player.getInventory().addItem(null)
                     return;
                 } 
 
@@ -62,7 +64,7 @@ public class ArenaGameplayListener implements Listener
         ArenaPlayer arenaPlayer = ArenaPlayer.getPlayer(player);
         if (!arenaPlayer.isPlaying()) return;
         
-        if (event.getBlock().getType() == Material.BEDROCK) 
+        if (event.getBlock().getType().equals(Material.IRON_BLOCK)) 
         {
             arenaPlayer.setSpawnBlockLocation(event.getBlock().getLocation());
             player.sendMessage("§aВы установили новый спавн-блок!");

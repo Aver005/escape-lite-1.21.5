@@ -12,7 +12,8 @@ import com.example.escapeplugin.notifications.NotificationService;
 import com.example.escapeplugin.quests.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class EscapePlugin extends JavaPlugin {
+public class EscapePlugin extends JavaPlugin 
+{
     private static EscapePlugin instance;
     private ArenaManager arenaManager;
     private QuestManager questManager;
@@ -25,7 +26,8 @@ public class EscapePlugin extends JavaPlugin {
     private NotificationService notificationService;
 
     @Override
-    public void onEnable() {
+    public void onEnable() 
+    {
         saveDefaultConfig();
         if (!getDataFolder().exists()) getDataFolder().mkdir();
         
