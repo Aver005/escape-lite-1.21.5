@@ -1,17 +1,27 @@
 package com.example.escapeplugin.commands;
 
+import com.example.escapeplugin.EscapePlugin;
 import com.example.escapeplugin.entities.Arena;
 import com.example.escapeplugin.entities.Prisoner;
 import com.example.escapeplugin.enums.ArenaStatus;
+import com.example.escapeplugin.enums.LootRarity;
 import com.example.escapeplugin.managers.ArenaStorage;
+import com.example.escapeplugin.managers.LootManager;
 import com.example.escapeplugin.managers.PrisonerStorage;
 import com.example.escapeplugin.managers.SetupTools;
 
+import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class EscapeCommand implements CommandExecutor
@@ -221,6 +231,112 @@ public class EscapeCommand implements CommandExecutor
 
                 ArenaStorage.loadArena(arena);
                 player.sendMessage("§bАрена загружена");
+            }
+        ),
+        
+        ADDLOOT(
+            "addloot",
+            "§6/es addloot <редкость> <шанс> §7- Добавить лут из руки",
+            3,
+            (player, args) ->
+            {
+                try 
+                {
+                    
+                    ItemStack item = player.getInventory().getItemInMainHand();
+                    if (item == null || item.getType().isAir()) 
+                    {
+                        player.sendMessage("§cВозьмите предмет в руку!");
+                        return;
+                    }
+
+                    String key = args[1].toUpperCase() + "_" + item.getType();
+                    LootRarity rarity = LootRarity.valueOf(args[1].toUpperCase());
+                    double chance = Double.parseDouble(args[2]);
+                    
+                    LootManager lootManager = EscapePlugin.getInstance().getLootManager();
+                    lootManager.addLootItem(key, item, rarity, chance);
+                    player.sendMessage("§aПредмет добавлен в лут!");
+                } 
+                catch (IllegalArgumentException e) 
+                {
+                    player.sendMessage("§cНекорректные аргументы! Используйте: ARTIFACT/LEGENDARY/EPIC/RARE/COMMON");
+                } 
+                catch (Exception e) 
+                {
+                    player.sendMessage("§cОшибка при добавлении лута: " + e.getMessage());
+                }
+            }
+        ),
+        
+        SAVELOOT(
+            "saveloot",
+            "§6/es saveloot §7- Сохранить лут",
+            1,
+            (player, args) ->
+            {
+                LootManager lootManager = EscapePlugin.getInstance().getLootManager();
+                try { lootManager.saveLootConfig(); } 
+                catch (IOException e) { e.printStackTrace(); }
+            }
+        ),
+        
+        LOADLOOT(
+            "loadloot",
+            "§6/es loadloot §7- Загрузить лут",
+            1,
+            (player, args) ->
+            {
+                LootManager lootManager = EscapePlugin.getInstance().getLootManager();
+                lootManager.loadLootConfig();
+            }
+        ),
+        
+        CREATEITEM(
+            "createitem",
+            "§6/es createitem [урон] [цвет] [название] [описание] §7- Создать предмет с параметрами",
+            2,
+            (player, args) -> 
+            {
+                try 
+                {
+                    ItemStack item = player.getInventory().getItemInMainHand();
+                    ItemMeta meta = item.getItemMeta();
+                    
+                    // Durability
+                    if (args.length > 1) 
+                    {
+                        int damage = Integer.parseInt(args[1]);
+                        Damageable dmg = (Damageable) meta; 
+                        dmg.setDamage(damage);
+                    }
+                    
+                    // Color (for leather armor)
+                    if (args.length > 2 && meta instanceof LeatherArmorMeta) 
+                    {
+                        int color = Integer.parseInt(args[2].replace("#", ""), 16);
+                        ((LeatherArmorMeta) meta).setColor(Color.fromRGB(color));
+                    }
+                    
+                    // Display name
+                    if (args.length > 3) 
+                    {
+                        meta.setDisplayName(args[3].replace("_", " "));
+                    }
+                    
+                    // Lore
+                    if (args.length > 4) 
+                    {
+                        String[] loreLines = args[4].split("\\|");
+                        meta.setLore(Arrays.asList(loreLines));
+                    }
+                    
+                    item.setItemMeta(meta);
+                } 
+                catch (IllegalArgumentException e) 
+                {
+                    player.sendMessage("§cНекорректные параметры! Используйте: /es createitem [урон] [цвет] [название] [описание]");
+                }
             }
         );
 

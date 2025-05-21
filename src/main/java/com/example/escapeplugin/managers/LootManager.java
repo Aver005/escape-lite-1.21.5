@@ -28,7 +28,7 @@ public class LootManager
         loadLootConfig();
     }
 
-    private void loadLootConfig() 
+    public void loadLootConfig() 
     {
         lootFile = new File(plugin.getDataFolder(), "loot.yml");
         if (!lootFile.exists()) plugin.saveResource("loot.yml", false);
