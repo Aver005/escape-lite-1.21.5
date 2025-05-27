@@ -1,6 +1,7 @@
 package com.example.escapeplugin.entities;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 public class Prisoner 
@@ -45,5 +46,10 @@ public class Prisoner
     {
         if (oldLocation == null) return;
         player.teleport(oldLocation);
+    }
+
+    public void setSpawnBlock(Block b) 
+    {
+        spawnBlock = new SpawnBlock(b.getType(), b.getLocation());
     }
 }

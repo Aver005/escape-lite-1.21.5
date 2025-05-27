@@ -8,7 +8,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -56,7 +55,7 @@ public class Arena
         this.ID = ID.toUpperCase().strip();
         this.name = ID;
         this.runnable = new ArenaRunnable(this);
-        this.status = ArenaStatus.DISABLED;
+        this.status = ArenaStatus.WAITING;
 
         this.prisonerSpawns = new ArrayList<>();
         this.freePrisonerSpawns = new ArrayList<>();
@@ -211,10 +210,16 @@ public class Arena
         if (isPlaying())
         {
             p.setGameMode(GameMode.SURVIVAL);
+
+            ItemStack spawnBlock = new ItemStack(Material.IRON_BLOCK);
+            spawnBlock.getItemMeta().setDisplayName("§6Ваш спаси-блок");
+            p.getInventory().addItem(spawnBlock);
+
             // Create golden pickaxe with low durability
             ItemStack pickaxe = new ItemStack(Material.GOLDEN_PICKAXE);
             pickaxe.setDurability((short)(pickaxe.getType().getMaxDurability() - 1));
             pickaxe.getItemMeta().setDisplayName("§6Ломалка");
+
             p.getInventory().setItemInMainHand(pickaxe);
             p.setHealth(20);
             p.getAttribute(Attribute.MAX_HEALTH).setBaseValue(20);
@@ -295,6 +300,11 @@ public class Arena
         droppedItems.add(item);
     }
 
+    public void broadcast(String message) 
+    { 
+        prisoners.forEach(prisoner -> prisoner.getPlayer().sendMessage(message)); 
+    }
+
     public boolean isPlaying() { return status.equals(ArenaStatus.PLAYING); }
     public boolean isWaiting() { return status.equals(ArenaStatus.WAITING); }
     public void setStatus(ArenaStatus status) { this.status = status; }
@@ -315,4 +325,41 @@ public class Arena
     public HashMap<String, Location> getLeverSpawns() { return leverSpawns; }
     public HashMap<TraderType, ArrayList<Location>> getTraderSpawns() { return traderSpawns; }
     public List<Prisoner> getPrisoners() { return prisoners; }
+
+    public void playerDead(Prisoner prisoner) 
+    {
+        Player p = prisoner.getPlayer();
+        broadcast("§c" + p.getName() + " умер.");
+        p.getWorld().strikeLightning(p.getLocation());
+
+        if (prisoner.getSpawnBlock() != null)
+        {
+            p.sendTitle("§eВозрождение", "§fВы появились на своём блоке");
+            p.sendMessage("§eВы появились на своём блоке.");
+            p.teleport(prisoner.getSpawnBlock().getLocation());
+            p.getWorld().strikeLightning(p.getLocation());
+            p.setHealth(20);
+            p.setAbsorptionAmount(20);
+            p.getInventory().clear();
+            return;
+        }
+
+        p.setHealth(20);
+        p.setAbsorptionAmount(20);
+        p.getInventory().clear();
+        p.setGameMode(GameMode.SPECTATOR);
+        p.sendTitle("§cСмерть...", "§eУ вас не было своего блока.");
+    }
+
+    public Prisoner isSpawnBlock(Location location) 
+    {
+        for (Prisoner prisoner : prisoners) 
+        {
+            SpawnBlock sb = prisoner.getSpawnBlock();
+            if (sb == null) continue;
+            if (sb.getLocation().equals(location)) return prisoner;
+        }
+
+        return null;
+    }
 }
